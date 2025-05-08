@@ -55,6 +55,7 @@ public class NetworkManager {
 		    }
 		});
 		this.readerThread.start();
+		LOGGER.info(webSocket.getRemoteSocketAddress().toString() + " connected!");
 	}
 	
 	public void addToSendQueue(ByteBuffer pkt) {

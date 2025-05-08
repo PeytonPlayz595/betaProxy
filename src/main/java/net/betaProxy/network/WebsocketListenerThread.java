@@ -26,7 +26,6 @@ public class WebsocketListenerThread extends WebSocketServer {
 	}
 	
 	@Override
-	//Not being called!?
 	public void onClose(WebSocket arg0, int arg1, String arg2, boolean arg3) {
 		NetworkManager mgr = arg0.getAttachment();
 		mgr.checkDisconnected();
@@ -62,7 +61,6 @@ public class WebsocketListenerThread extends WebSocketServer {
 		try {
 			NetworkManager mngr = new NetworkManager(arg0);
 			arg0.setAttachment(mngr);
-			ProxyServer.getLogger().info(arg0.getRemoteSocketAddress().toString() + " connected!");
 		} catch (IOException e) {
 			ProxyServer.getLogger().warn("Cannot connect to minecraft server (Is the server down?)");
 			arg0.send(new byte[] { -1, 0, 42, 73, 110, 116, 101, 114, 110, 97, 108, 32, 112, 114, 111, 120, 121, 32, 101, 114, 114, 111, 114, 32, 40, 73, 115, 32, 116, 104, 101, 32, 115, 101, 114, 118, 101, 114, 32, 100, 111, 119, 110, 63, 41 });
