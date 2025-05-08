@@ -35,8 +35,8 @@ public class ProxyServer {
 			throw new RuntimeException(e);
 		}
 		
-		String wsAddr = propertiesManager.getProperty("websocket-address", "0.0.0.0:8080");
-		String mcAddr = propertiesManager.getProperty("minecraft-address", "0.0.0.0:25565");
+		String wsAddr = propertiesManager.getProperty("websocket_server_address", "0.0.0.0:8080");
+		String mcAddr = propertiesManager.getProperty("minecraft_server_address", "0.0.0.0:25565");
 		
 		InetSocketAddress inetWebsocketAddress = null;
 		if (wsAddr.length() > 0 && !wsAddr.equalsIgnoreCase("null")) {
@@ -51,7 +51,7 @@ public class ProxyServer {
 			try {
 				inetWebsocketAddress = new InetSocketAddress(InetAddress.getByName(addr), port);
 			}catch(UnknownHostException ex) {
-				throw new RuntimeException("ERROR: websocket-address '" + wsAddr + "' is invalid", ex);
+				throw new RuntimeException("ERROR: websocket_server_address '" + wsAddr + "' is invalid", ex);
 			}
 		}
 		
@@ -71,16 +71,8 @@ public class ProxyServer {
 			try {
 				inetVanillaAddress = new InetSocketAddress(InetAddress.getByName(addr), port);
 			}catch(UnknownHostException ex) {
-				throw new RuntimeException("ERROR: vanilla-address '" + mcAddr + "' is invalid", ex);
+				throw new RuntimeException("ERROR: minecraft_server_address '" + mcAddr + "' is invalid", ex);
 			}
-		}
-		
-		if(inetWebsocketAddress == null) {
-			throw new RuntimeException(new NullPointerException("Websocket address is undefined"));
-		}
-		
-		if(inetVanillaAddress == null) {
-			throw new RuntimeException(new NullPointerException("Minecraft address is undefined"));
 		}
 		
 		LOGGER.info("Starting TCP -> WebSocket proxy for Minecraft server version Beta 1.1_02");

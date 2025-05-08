@@ -29,12 +29,7 @@ public class WebsocketListenerThread extends WebSocketServer {
 	//Not being called!?
 	public void onClose(WebSocket arg0, int arg1, String arg2, boolean arg3) {
 		NetworkManager mgr = arg0.getAttachment();
-		try {
-			mgr.socket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		ProxyServer.getLogger().info(arg0.getRemoteSocketAddress().toString() + " disconnected!");
+		mgr.checkDisconnected();
 	}
 	
 	@Override
