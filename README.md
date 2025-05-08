@@ -19,13 +19,5 @@ I also plan on adding a way to manipulate packet data from the proxy.
   - Running the server is extremely simple and self explanitory. Make sure you have at least Java 11 installed, download the latest JAR from releases and run the jar file from within a terminal `java -jar betaProxy.jar` 
 
 ### Server Config (`server_properties.txt`):
-  - `minecraft-address`: The IP address of the Minecraft server you wish to proxy to a WebSocket connection, default value is `0.0.0.0:25565`
-  - `websocket-address`: The IP address where the WebSocket is hosted (This is what eagler players use to connect to the server), default value is `0.0.0.0:8080`
-  - `enable-whitelist`: enables a whitelist for the proxy, if enabled only whitelisted players can join using the proxy, default value is `false`
-
-### Server commands:
-  - `ban`: bans an player by username
-  - `ipban`: bans a player by ip
-  - `kick`: kicks a player by username from the server
-  - `whitelist`: Adds a player by username to the whitelist
-  - `whitelist_ip`: Adds a player by IP address to the whitelist
+  - `minecraft_server_address`: The IP address of the Minecraft server you wish to proxy to a WebSocket connection, default value is `0.0.0.0:25565`
+  - `websocket_server_address`: The IP address where the WebSocket is hosted (This is what eagler players use to connect to the server), default value is `0.0.0.0:8080`
