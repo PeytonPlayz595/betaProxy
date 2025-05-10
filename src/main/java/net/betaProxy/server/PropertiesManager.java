@@ -20,7 +20,9 @@ public class PropertiesManager {
 	public String getProperty(String key, String defaultKey) {
 		String s = propertiesMap.get(key);
 		if(s == null) {
-			ProxyServer.getLogger().warn("Properties file has no value for '" + key + ".' Using default value '" + defaultKey + ".'");
+			if(defaultKey != null) {
+				ProxyServer.getLogger().warn("Properties file has no value for '" + key + ".' Using default value '" + defaultKey + ".'");
+			}
 			return defaultKey;
 		}
 		return s;

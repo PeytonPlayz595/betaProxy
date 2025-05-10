@@ -8,20 +8,21 @@ import java.net.UnknownHostException;
 import net.betaProxy.log4j.LogManager;
 import net.betaProxy.log4j.Logger;
 import net.betaProxy.network.NetworkManager;
+import net.betaProxy.network.PVNMappingHelper;
 import net.betaProxy.network.WebsocketListenerThread;
 
 public class ProxyServer {
 	
 	private static Logger LOGGER = LogManager.getLogger("Beta Proxy");
 	private static PropertiesManager propertiesManager;
-	private static final File dataDir = new File("betaProxy");
+	private static final File dataDir = new File("config");
 	
 	private static WebsocketListenerThread wsNetManager;
 	private static InetSocketAddress mcAddress;
 	
 	public static void main(String[] args) {
-		System.setOut(new LoggerOutputStream("STDERR", true, System.err));
-		System.setErr(new LoggerOutputStream("STDOUT", false, System.out));
+		System.setOut(new LoggerOutputStream("STDOUT", false, System.out));
+		System.setErr(new LoggerOutputStream("STDERR", true, System.err));
 		
 		LOGGER.info("Loading server properties...");
 		if(!dataDir.exists()) {
@@ -37,6 +38,19 @@ public class ProxyServer {
 		
 		String wsAddr = propertiesManager.getProperty("websocket_server_address", "0.0.0.0:8080");
 		String mcAddr = propertiesManager.getProperty("minecraft_server_address", "0.0.0.0:25565");
+		String pvnS = propertiesManager.getProperty("minecraft_server_pvn", null);
+		
+		if(pvnS == null) {
+			throw new RuntimeException("Server protocol not set in server_properties.txt");
+		}
+		
+		int pvn;
+		try {
+			pvn = Integer.parseInt(pvnS);
+		} catch(Exception e) {
+			throw new RuntimeException("Invalid value for server protocol version: '" + pvnS + "'");
+		}
+		PVNMappingHelper.setPNVVersion(pvn);
 		
 		InetSocketAddress inetWebsocketAddress = null;
 		if (wsAddr.length() > 0 && !wsAddr.equalsIgnoreCase("null")) {
@@ -75,7 +89,7 @@ public class ProxyServer {
 			}
 		}
 		
-		LOGGER.info("Starting TCP -> WebSocket proxy for Minecraft server version Beta 1.1_02");
+		LOGGER.info("Starting TCP -> WebSocket proxy for Minecraft server version(s) " + PVNMappingHelper.getSupportedVersionNames());
 		LOGGER.info("Forwarding TCP connection tcp:/" + inetVanillaAddress.toString() + " to ws:/" + inetWebsocketAddress.toString());
 		
 		wsNetManager = new WebsocketListenerThread(inetWebsocketAddress);
@@ -91,6 +105,10 @@ public class ProxyServer {
 		}
 		
 		mcAddress = inetVanillaAddress;
+		
+//		while(true) {
+//			
+//		}
 	}
 	
 	public static InetSocketAddress getMinecraftAddress() {

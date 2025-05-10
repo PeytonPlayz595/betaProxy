@@ -5,7 +5,7 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import net.betaProxy.server.ProxyServer;
-import net.minecraft.network.Packet;
+import net.minecraft.network.v8.Packet;
 
 public class PacketDefragmenter {
 	
@@ -14,7 +14,7 @@ public class PacketDefragmenter {
 		
 		byte[] data = null;
 		try {
-			data = Packet.readPacket(is);
+			data = readPacket(is);
 		} catch(EOFException e) {
 			is.reset();
 		} catch(IOException e) {
@@ -24,6 +24,22 @@ public class PacketDefragmenter {
 		}
 		
 		return data;
+	}
+	
+	private static byte[] readPacket(DataInputStream is) throws IOException {
+		switch(PVNMappingHelper.getServerPVN()) {
+		case 8:
+			return net.minecraft.network.v8.Packet.readPacket(is);
+		case 7:
+			//Client-side packets didn't have any changes from 7-8
+			return net.minecraft.network.v8.Packet.readPacket(is);
+		case 6:
+			return net.minecraft.network.v6.Packet.readPacket(is);
+		case 2:
+			return net.minecraft.network.v2.Packet.readPacket(is);
+		default:
+			return null;
+		}
 	}
 	
 }

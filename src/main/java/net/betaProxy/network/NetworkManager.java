@@ -82,7 +82,7 @@ public class NetworkManager {
 		boolean disconnected = !this.socket.isConnected() || !this.webSocket.isOpen();
 		if(this.socketLastRead == 1200 || this.webSocketLastRead == 1200 || disconnected) {
 			if(this.isConnectionOpen()) {
-				this.addToSendQueue(ByteBuffer.wrap(this.generateDisconnectPacket(disconnected ? "Connected closed" : "Connection timed out")));
+				this.addToSendQueue(ByteBuffer.wrap(generateDisconnectPacket(disconnected ? "Connected closed" : "Connection timed out")));
 				try {
 					this.socket.close();
 				} catch(IOException e) {
@@ -91,7 +91,7 @@ public class NetworkManager {
 			if(this.webSocket.isOpen()) {
 				LOGGER.info(this.webSocket.getRemoteSocketAddress().toString() + " disconnected!");
 				DataFrame frame = new BinaryFrame();
-				frame.setPayload(ByteBuffer.wrap(this.generateDisconnectPacket(disconnected ? "Connected closed" :"Connection timed out")));
+				frame.setPayload(ByteBuffer.wrap(generateDisconnectPacket(disconnected ? "Connected closed" :"Connection timed out")));
 				frame.setFin(true);
 				try {
 					this.webSocket.sendFrame(frame);
@@ -104,7 +104,7 @@ public class NetworkManager {
 		}
 	}
 	
-	public byte[] generateDisconnectPacket(String reason) {
+	public static byte[] generateDisconnectPacket(String reason) {
 		try(ByteArrayOutputStream baos = new ByteArrayOutputStream(); DataOutputStream dos = new DataOutputStream(baos)) {
 			dos.write(255);
 			dos.writeUTF(reason);
