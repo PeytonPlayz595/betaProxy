@@ -24,6 +24,10 @@ Yes, as of right now only one of my ports uses this but Beta Proxy supports mult
   - `minecraft_pvn`: The Protocol Version Number the Minecraft server uses.
   - `websocket_host`: The IP address where the WebSocket is hosted (This is what eagler players use to connect to the server).
 
-### Server PVN
+# Server PVN
 
 The server properties file has to have a "minecraft_pvn" value set. The Server PVN is essentially the protocol version number that the client/server uses, it is an integer used to check for incompatibilities between the client and the server. This proxy needs to know what the PVN is because it fully reads each packet received and it uses the packet classes from the Minecraft client to do so. Packets are different for each Minecraft version so if it doesn't know what the PVN is then it will use the wrong packet classes and read the wrong data from the packet.
+
+# Is my server supported?
+
+If you are unaware of what PVNs this proxy supports or what PVN your Minecraft server uses then look [here](PVN_MAPPINGS.txt) for a list of supported versions along with what PVN they use.
