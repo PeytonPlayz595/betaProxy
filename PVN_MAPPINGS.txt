@@ -1,0 +1,21 @@
+Supported server versions:
+    Beta 1.2_02: PVN 8
+    Beta 1.2_01: PVN 8
+    Beta 1.2: PVN 8
+    Beta 1.1_02: PVN 8
+
+    Beta 1.1_01: PVN 7
+    Beta 1.1: PVN 7
+    Beta 1.0.2: PVN 7
+    Beta 1.0_01: PVN 7
+    Beta 1.0: PVN 7
+
+    Alpha v1.2.6: PVN 6
+    Alpha v1.2.5: PVN 6
+    Alpha v1.2.4_01: PVN 6
+    Alpha v1.2.3_05: PVN 6
+
+    Alpha v1.1.2_01: PVN 2
+    Alpha v1.1.2: PVN 2
+    Alpha v1.1.1: PVN 2
+    Alpha v1.1.0: PVN 2
