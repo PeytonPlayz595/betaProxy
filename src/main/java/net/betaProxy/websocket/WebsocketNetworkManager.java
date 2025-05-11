@@ -15,6 +15,7 @@ import org.java_websocket.framing.DataFrame;
 
 import net.betaProxy.main.Main;
 import net.betaProxy.utils.ProtocolAwarePacketReader;
+import net.betaProxy.utils.Timer;
 import net.lax1dude.log4j.LogManager;
 import net.lax1dude.log4j.Logger;
 
@@ -34,6 +35,8 @@ public class WebsocketNetworkManager {
 	
 	private Logger LOGGER = LogManager.getLogger("NetworkManager");
 	
+	private Timer timer;
+	
 	public WebsocketNetworkManager(WebSocket webSocket) throws IOException {
 		this.webSocket = webSocket;
 		InetSocketAddress addr = Main.getMinecraftAddress();
@@ -43,15 +46,19 @@ public class WebsocketNetworkManager {
 		this.socketOutputStream = new DataOutputStream(socket.getOutputStream());
 		this.running = true;
 		final String s = Thread.currentThread().getName();
+		timer = new Timer(20.0f);
 		this.readerThread = new Thread(() -> {
 			Thread.currentThread().setName(s);
 		    while(running) {
-		    	try {
-		    		checkDisconnected();
-					readPacket();
-				} catch (Exception e) {
-					LOGGER.error(e);
-				}
+		    	this.timer.updateTimer();
+		    	for(int i = 0; i < this.timer.elapsedTicks; ++i) {
+		    		try {
+		    			checkDisconnected();
+						readPacket();
+					} catch (Exception e) {
+						LOGGER.error(e);
+					}
+		    	}
 		    }
 		});
 		this.readerThread.start();

@@ -8,8 +8,6 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
-import net.betaProxy.main.Main;
-
 public class WebsocketServerListener extends WebSocketServer {
 
 	public final Object startupLock = new Object();
