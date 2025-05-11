@@ -128,6 +128,15 @@ public class PropertiesManager {
 					mcPvn = true;
 					writer.print("minecraft_pvn=" + value);
 				} else {
+					if(key.equals("minecraft_host")) {
+						mcAddr = true;
+					}
+					if(key.equals("websocket_host")) {
+						wsAddr = true;
+					}
+					if(key.equals("minecraft_pvn")) {
+						mcPvn = true;
+					}
 					writer.println(key + "=" + value);
 				}
 			}

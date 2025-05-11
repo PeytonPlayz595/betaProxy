@@ -66,10 +66,6 @@ public class Main {
 			}
 		}
 		
-		if(inetWebsocketAddress == null) {
-			
-		}
-		
 		InetSocketAddress inetVanillaAddress = null;
 		if (mcAddr.length() > 0 && !mcAddr.equalsIgnoreCase("null")) {
 			String addr = mcAddr;
