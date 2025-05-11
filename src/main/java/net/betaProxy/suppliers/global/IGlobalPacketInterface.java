@@ -1,4 +1,4 @@
-package net.peyton.suppliers;
+package net.betaProxy.suppliers.global;
 
 public interface IGlobalPacketInterface {
 }

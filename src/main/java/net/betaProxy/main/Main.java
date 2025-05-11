@@ -1,28 +1,30 @@
-package net.betaProxy.server;
+package net.betaProxy.main;
 
 import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-import net.betaProxy.log4j.LogManager;
-import net.betaProxy.log4j.Logger;
-import net.betaProxy.network.NetworkManager;
-import net.betaProxy.network.PVNMappingHelper;
-import net.betaProxy.network.WebsocketListenerThread;
+import net.betaProxy.utils.LoggerRedirector;
+import net.betaProxy.utils.PropertiesManager;
+import net.betaProxy.utils.SupportedProtocolVersionInfo;
+import net.betaProxy.websocket.WebsocketNetworkManager;
+import net.betaProxy.websocket.WebsocketServerListener;
+import net.lax1dude.log4j.LogManager;
+import net.lax1dude.log4j.Logger;
 
-public class ProxyServer {
+public class Main {
 	
 	private static Logger LOGGER = LogManager.getLogger("Beta Proxy");
 	private static PropertiesManager propertiesManager;
 	private static final File dataDir = new File("config");
 	
-	private static WebsocketListenerThread wsNetManager;
+	private static WebsocketServerListener wsNetManager;
 	private static InetSocketAddress mcAddress;
 	
 	public static void main(String[] args) {
-		System.setOut(new LoggerOutputStream("STDOUT", false, System.out));
-		System.setErr(new LoggerOutputStream("STDERR", true, System.err));
+		System.setOut(new LoggerRedirector("STDOUT", false, System.out));
+		System.setErr(new LoggerRedirector("STDERR", true, System.err));
 		
 		LOGGER.info("Loading server properties...");
 		if(!dataDir.exists()) {
@@ -50,7 +52,7 @@ public class ProxyServer {
 		} catch(Exception e) {
 			throw new RuntimeException("Invalid value for server protocol version: '" + pvnS + "'");
 		}
-		PVNMappingHelper.setPNVVersion(pvn);
+		SupportedProtocolVersionInfo.setPNVVersion(pvn);
 		
 		InetSocketAddress inetWebsocketAddress = null;
 		if (wsAddr.length() > 0 && !wsAddr.equalsIgnoreCase("null")) {
@@ -89,10 +91,10 @@ public class ProxyServer {
 			}
 		}
 		
-		LOGGER.info("Starting TCP -> WebSocket proxy for Minecraft server version(s) " + PVNMappingHelper.getSupportedVersionNames());
+		LOGGER.info("Starting TCP -> WebSocket proxy for Minecraft server version(s) " + SupportedProtocolVersionInfo.getSupportedVersionNames());
 		LOGGER.info("Forwarding TCP connection tcp:/" + inetVanillaAddress.toString() + " to ws:/" + inetWebsocketAddress.toString());
 		
-		wsNetManager = new WebsocketListenerThread(inetWebsocketAddress);
+		wsNetManager = new WebsocketServerListener(inetWebsocketAddress);
 		synchronized(wsNetManager.startupLock) {
 			try {
 				wsNetManager.startupLock.wait(5000l);

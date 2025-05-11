@@ -1,4 +1,4 @@
-package net.betaProxy.server;
+package net.betaProxy.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import net.betaProxy.main.Main;
 
 public class PropertiesManager {
 	
@@ -21,7 +23,7 @@ public class PropertiesManager {
 		String s = propertiesMap.get(key);
 		if(s == null) {
 			if(defaultKey != null) {
-				ProxyServer.getLogger().warn("Properties file has no value for '" + key + ".' Using default value '" + defaultKey + ".'");
+				Main.getLogger().warn("Properties file has no value for '" + key + ".' Using default value '" + defaultKey + ".'");
 			}
 			return defaultKey;
 		}

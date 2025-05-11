@@ -8,14 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.peyton.suppliers.IGlobalPacketInterface;
-import net.peyton.suppliers.IPacketSupplier;
+import net.betaProxy.suppliers.global.IGlobalPacketInterface;
+import net.betaProxy.suppliers.global.IGlobalPacketSupplier;
 
 public abstract class Packet implements IGlobalPacketInterface {
-	private static Map<Integer, IPacketSupplier<Packet>> packetIdToSupplierMap = new ConcurrentHashMap<Integer, IPacketSupplier<Packet>>();
+	private static Map<Integer, IGlobalPacketSupplier<Packet>> packetIdToSupplierMap = new ConcurrentHashMap<Integer, IGlobalPacketSupplier<Packet>>();
 	private static Map<Class<? extends Packet>, Integer> packetClassToIdMap = new HashMap<Class<? extends Packet>, Integer>();
 
-	static void addIdClassMapping(int var0, Class<? extends Packet> var2, IPacketSupplier<Packet> var3) {
+	static void addIdClassMapping(int var0, Class<? extends Packet> var2, IGlobalPacketSupplier<Packet> var3) {
 		if(packetIdToSupplierMap.containsKey(Integer.valueOf(var0))) {
 			throw new IllegalArgumentException("Duplicate packet id:" + var0);
 		} else {
@@ -26,7 +26,7 @@ public abstract class Packet implements IGlobalPacketInterface {
 
 	public static Packet getNewPacket(int var0) {
 		try {
-			IPacketSupplier<Packet> var1 = packetIdToSupplierMap.get(Integer.valueOf(var0));
+			IGlobalPacketSupplier<Packet> var1 = packetIdToSupplierMap.get(Integer.valueOf(var0));
 			return var1 == null ? null : var1.supplyGlobalPacket();
 		} catch (Exception var2) {
 			var2.printStackTrace();

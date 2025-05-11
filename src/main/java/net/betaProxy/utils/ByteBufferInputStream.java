@@ -1,4 +1,4 @@
-package net.betaProxy.network;
+package net.betaProxy.utils;
 
 import java.io.IOException;
 import java.io.InputStream;

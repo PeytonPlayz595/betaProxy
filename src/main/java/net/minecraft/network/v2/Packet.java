@@ -7,15 +7,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.peyton.suppliers.IGlobalPacketInterface;
-import net.peyton.suppliers.IPacketSupplier;
+import net.betaProxy.suppliers.global.IGlobalPacketInterface;
+import net.betaProxy.suppliers.global.IGlobalPacketSupplier;
 
 public abstract class Packet implements IGlobalPacketInterface {
-	private static Map<Integer, IPacketSupplier<Packet>> packetIdToSupplierMap = new HashMap<Integer, IPacketSupplier<Packet>>();
+	private static Map<Integer, IGlobalPacketSupplier<Packet>> packetIdToSupplierMap = new HashMap<Integer, IGlobalPacketSupplier<Packet>>();
 	private static Map<Class<? extends Packet>, Integer> packetClassToIdMap = new HashMap<Class<? extends Packet>, Integer>();
 	public boolean isChunkDataPacket = false;
 
-	static void addIdClassMapping(int var0, Class<? extends Packet> var1, IPacketSupplier<Packet> var2) {
+	static void addIdClassMapping(int var0, Class<? extends Packet> var1, IGlobalPacketSupplier<Packet> var2) {
 		if(packetIdToSupplierMap.containsKey(Integer.valueOf(var0))) {
 			throw new IllegalArgumentException("Duplicate packet id:" + var0);
 		} else if(packetClassToIdMap.containsKey(var1)) {
@@ -28,7 +28,7 @@ public abstract class Packet implements IGlobalPacketInterface {
 
 	public static Packet getNewPacket(int var0) {
 		try {
-			IPacketSupplier<Packet> var1 = packetIdToSupplierMap.get(Integer.valueOf(var0));
+			IGlobalPacketSupplier<Packet> var1 = packetIdToSupplierMap.get(Integer.valueOf(var0));
 			return var1 == null ? null : (Packet)var1.supplyGlobalPacket();
 		} catch (Exception var2) {
 			var2.printStackTrace();

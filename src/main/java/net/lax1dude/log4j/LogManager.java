@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 lax1dude. All Rights Reserved.
+ * Copyright (c) 2022-2024 lax1dude. All Rights Reserved.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -14,30 +14,36 @@
  * 
  */
 
-package net.betaProxy.log4j;
+package net.lax1dude.log4j;
 
-import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
 
-public enum Level {
+public class LogManager {
 	
-	TRACE(0, "TRACE", false), DEBUG(1, "DEBUG", false), INFO(2, "INFO", false),
-	WARN(3, "WARN", false), ERROR(4, "ERROR", true), FATAL(5, "FATAL", true),
-	OFF(Integer.MAX_VALUE, "DISABLED", false);
-
-	public final int levelInt;
-	public final String levelName;
-	public final PrintStream stdout;
-	public final boolean isErr;
+	private static final Map<String,Logger> loggerInstances = new HashMap<>();
 	
-	private Level(int levelInt, String levelName, boolean stderr) {
-		this.levelInt = levelInt;
-		this.levelName = levelName;
-		this.stdout = stderr ? System.err : System.out;
-		this.isErr = stderr;
+	public static final Object logLock = new Object();
+	public static Level logLevel = Level.DEBUG;
+	public static ILogRedirector logRedirector = null;
+	
+	public static Logger getLogger() {
+		return getLogger("Beta Proxy");
 	}
 	
-	PrintStream getPrintStream() {
-		return stdout;
+	public static Logger getLogger(String name) {
+		Logger ret;
+		synchronized(loggerInstances) {
+			ret = loggerInstances.get(name);
+			if(ret == null) {
+				ret = new Logger(name);
+			}
+		}
+		return ret;
 	}
 	
+	public static void setLevel(Level lv) {
+		logLevel = lv;
+	}
+
 }

@@ -14,7 +14,7 @@
  * 
  */
 
-package net.betaProxy.log4j;
+package net.lax1dude.log4j;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

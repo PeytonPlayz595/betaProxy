@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 lax1dude. All Rights Reserved.
+ * Copyright (c) 2022 lax1dude. All Rights Reserved.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -14,10 +14,30 @@
  * 
  */
 
-package net.betaProxy.log4j;
+package net.lax1dude.log4j;
 
-public interface ILogRedirector {
+import java.io.PrintStream;
 
-	void log(String txt, boolean err);
+public enum Level {
+	
+	TRACE(0, "TRACE", false), DEBUG(1, "DEBUG", false), INFO(2, "INFO", false),
+	WARN(3, "WARN", false), ERROR(4, "ERROR", true), FATAL(5, "FATAL", true),
+	OFF(Integer.MAX_VALUE, "DISABLED", false);
 
+	public final int levelInt;
+	public final String levelName;
+	public final PrintStream stdout;
+	public final boolean isErr;
+	
+	private Level(int levelInt, String levelName, boolean stderr) {
+		this.levelInt = levelInt;
+		this.levelName = levelName;
+		this.stdout = stderr ? System.err : System.out;
+		this.isErr = stderr;
+	}
+	
+	PrintStream getPrintStream() {
+		return stdout;
+	}
+	
 }

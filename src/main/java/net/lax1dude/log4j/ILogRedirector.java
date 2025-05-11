@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 lax1dude. All Rights Reserved.
+ * Copyright (c) 2024 lax1dude. All Rights Reserved.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -14,36 +14,10 @@
  * 
  */
 
-package net.betaProxy.log4j;
+package net.lax1dude.log4j;
 
-import java.util.HashMap;
-import java.util.Map;
+public interface ILogRedirector {
 
-public class LogManager {
-	
-	private static final Map<String,Logger> loggerInstances = new HashMap<>();
-	
-	public static final Object logLock = new Object();
-	public static Level logLevel = Level.DEBUG;
-	public static ILogRedirector logRedirector = null;
-	
-	public static Logger getLogger() {
-		return getLogger("Beta Proxy");
-	}
-	
-	public static Logger getLogger(String name) {
-		Logger ret;
-		synchronized(loggerInstances) {
-			ret = loggerInstances.get(name);
-			if(ret == null) {
-				ret = new Logger(name);
-			}
-		}
-		return ret;
-	}
-	
-	public static void setLevel(Level lv) {
-		logLevel = lv;
-	}
+	void log(String txt, boolean err);
 
 }

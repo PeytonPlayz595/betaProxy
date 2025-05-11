@@ -1,11 +1,11 @@
-package net.betaProxy.network;
+package net.betaProxy.utils;
 
-public class PVNMappingHelper {
+public class SupportedProtocolVersionInfo {
 	
 	private static int pvn;
 	
 	public static void setPNVVersion(int pvn) {
-		PVNMappingHelper.pvn = pvn;
+		SupportedProtocolVersionInfo.pvn = pvn;
 	}
 	
 	public static int getServerPVN() {
@@ -14,8 +14,6 @@ public class PVNMappingHelper {
 	
 	public static String getSupportedVersionNames() {
 		switch(pvn) {
-		case 14:
-			return "Beta 1.7 -> Beta 1.7.3";
 		case 8:
 			return "Beta 1.1_02 -> Beta 1.2_02";
 		case 7:

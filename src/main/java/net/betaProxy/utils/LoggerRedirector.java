@@ -1,16 +1,16 @@
-package net.betaProxy.server;
+package net.betaProxy.utils;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import net.betaProxy.log4j.LogManager;
-import net.betaProxy.log4j.Logger;
+import net.lax1dude.log4j.LogManager;
+import net.lax1dude.log4j.Logger;
 
-public class LoggerOutputStream extends PrintStream {
+public class LoggerRedirector extends PrintStream {
 	private final Logger logger;
 	private final boolean err;
 
-	public LoggerOutputStream(String domainIn, boolean err, OutputStream outStream) {
+	public LoggerRedirector(String domainIn, boolean err, OutputStream outStream) {
 		super(outStream);
 		this.logger = LogManager.getLogger(domainIn);
 		this.err = err;

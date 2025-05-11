@@ -27,8 +27,8 @@ public class Packet51MapChunk extends Packet {
 		this.xSize = var1.read() + 1;
 		this.ySize = var1.read() + 1;
 		this.zSize = var1.read() + 1;
-		int var2 = var1.readInt();
-		byte[] var3 = new byte[var2];
+		this.tempLength = var1.readInt();
+		byte[] var3 = new byte[this.tempLength];
 		var1.readFully(var3);
 		this.chunkData = var3;
 	}
@@ -41,7 +41,7 @@ public class Packet51MapChunk extends Packet {
 		var1.write(this.ySize - 1);
 		var1.write(this.zSize - 1);
 		var1.writeInt(this.tempLength);
-		var1.write(this.chunkData, 0, this.tempLength);
+		var1.write(this.chunkData);
 	}
 
 	public int getPacketSize() {
