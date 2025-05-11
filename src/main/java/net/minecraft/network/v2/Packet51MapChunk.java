@@ -3,8 +3,6 @@ package net.minecraft.network.v2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.zip.DataFormatException;
-import java.util.zip.Inflater;
 
 public class Packet51MapChunk extends Packet {
 	public int xPosition;

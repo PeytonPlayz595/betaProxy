@@ -8,7 +8,6 @@ import java.net.UnknownHostException;
 import net.betaProxy.utils.LoggerRedirector;
 import net.betaProxy.utils.PropertiesManager;
 import net.betaProxy.utils.SupportedProtocolVersionInfo;
-import net.betaProxy.websocket.WebsocketNetworkManager;
 import net.betaProxy.websocket.WebsocketServerListener;
 import net.lax1dude.log4j.LogManager;
 import net.lax1dude.log4j.Logger;
@@ -38,13 +37,9 @@ public class Main {
 			throw new RuntimeException(e);
 		}
 		
-		String wsAddr = propertiesManager.getProperty("websocket_server_address", "0.0.0.0:8080");
-		String mcAddr = propertiesManager.getProperty("minecraft_server_address", "0.0.0.0:25565");
-		String pvnS = propertiesManager.getProperty("minecraft_server_pvn", null);
-		
-		if(pvnS == null) {
-			throw new RuntimeException("Server protocol not set in server_properties.txt");
-		}
+		String wsAddr = propertiesManager.getProperty("websocket_host", "0.0.0.0:8080");
+		String mcAddr = propertiesManager.getProperty("minecraft_host", "0.0.0.0:25565");
+		String pvnS = propertiesManager.getProperty("minecraft_pvn", "8");
 		
 		int pvn;
 		try {
@@ -67,7 +62,7 @@ public class Main {
 			try {
 				inetWebsocketAddress = new InetSocketAddress(InetAddress.getByName(addr), port);
 			}catch(UnknownHostException ex) {
-				throw new RuntimeException("ERROR: websocket_server_address '" + wsAddr + "' is invalid", ex);
+				throw new RuntimeException("ERROR: websocket host '" + wsAddr + "' is invalid", ex);
 			}
 		}
 		
@@ -87,7 +82,7 @@ public class Main {
 			try {
 				inetVanillaAddress = new InetSocketAddress(InetAddress.getByName(addr), port);
 			}catch(UnknownHostException ex) {
-				throw new RuntimeException("ERROR: minecraft_server_address '" + mcAddr + "' is invalid", ex);
+				throw new RuntimeException("ERROR: minecraft host '" + mcAddr + "' is invalid", ex);
 			}
 		}
 		
@@ -107,10 +102,6 @@ public class Main {
 		}
 		
 		mcAddress = inetVanillaAddress;
-		
-//		while(true) {
-//			
-//		}
 	}
 	
 	public static InetSocketAddress getMinecraftAddress() {

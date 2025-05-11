@@ -34,6 +34,7 @@ public class WebsocketServerListener extends WebSocketServer {
 	@Override
 	public void onError(WebSocket arg0, Exception arg1) {
 		if(!this.started) {
+			arg1.printStackTrace();
 			this.startupFailed = true;
 			synchronized(startupLock) {
 				startupLock.notify();
