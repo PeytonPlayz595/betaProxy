@@ -4,6 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import net.minecraft.utils.ItemStack;
+
 public class Packet103 extends Packet {
 	public int field_20042_a;
 	public int field_20041_b;

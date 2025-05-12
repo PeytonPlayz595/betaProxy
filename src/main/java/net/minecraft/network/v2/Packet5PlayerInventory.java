@@ -4,7 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import net.minecraft.network.v8.ItemStack;
+import net.minecraft.utils.ItemStack;
 
 public class Packet5PlayerInventory extends Packet {
 	public int inventoryType;

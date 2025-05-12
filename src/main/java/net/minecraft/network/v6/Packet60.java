@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import net.minecraft.network.v8.ChunkPosition;
+import net.minecraft.utils.ChunkPosition;
 
 public class Packet60 extends Packet {
 	public double field_12236_a;

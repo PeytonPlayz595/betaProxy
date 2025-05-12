@@ -14,9 +14,13 @@ import org.java_websocket.framing.BinaryFrame;
 import org.java_websocket.framing.DataFrame;
 
 import net.betaProxy.main.Main;
+import net.betaProxy.utils.ClientServerProtocolMatcher;
 import net.betaProxy.utils.ProtocolAwarePacketReader;
+import net.betaProxy.utils.SupportedProtocolVersionInfo;
 import net.lax1dude.log4j.LogManager;
 import net.lax1dude.log4j.Logger;
+import net.minecraft.network.local.LoginPacket;
+import net.minecraft.network.local.ServerPacket;
 
 public class WebsocketNetworkManager {
 	
@@ -35,16 +39,19 @@ public class WebsocketNetworkManager {
 	public static Logger LOGGER = LogManager.getLogger("NetworkManager");
 	private String ip;
 	
+	private ClientServerProtocolMatcher protocolMatcher;
+	
 	public WebsocketNetworkManager(WebSocket webSocket) throws IOException {
 		this.webSocket = webSocket;
 		InetSocketAddress addr = Main.getMinecraftAddress();
-		socket = new Socket(addr.getHostString(), addr.getPort());
-		socket.setTrafficClass(24);
+		this.socket = new Socket(addr.getHostString(), addr.getPort());
+		this.socket.setTrafficClass(24);
 		this.socketInputStream = new DataInputStream(socket.getInputStream());
 		this.socketOutputStream = new DataOutputStream(socket.getOutputStream());
 		this.running = true;
 		final String s = Thread.currentThread().getName();
-		ip = webSocket.getRemoteSocketAddress().getHostString();
+		this.ip = webSocket.getRemoteSocketAddress().getHostString();
+		this.protocolMatcher = new ClientServerProtocolMatcher();
 		this.readerThread = new Thread(() -> {
 			Thread.currentThread().setName(s);
 		    while(running) {
@@ -61,12 +68,42 @@ public class WebsocketNetworkManager {
 	}
 	
 	public void addToSendQueue(ByteBuffer pkt) {
-		if(isConnectionOpen()) {
+		if(this.isConnectionOpen()) {
+			byte[] data = new byte[pkt.remaining()];
+			pkt.get(data);
+			if(!protocolMatcher.hasMatched) {
+				protocolMatcher.attemptMatch(pkt);
+			}
+			if(protocolMatcher.isError) {
+				if(!protocolMatcher.hasSent) {
+					byte[] error;
+					if(protocolMatcher.outdatedClient) {
+						error = generateDisconnectPacket("Outdated client");
+					} else if(protocolMatcher.outdatedServer) {
+						error = generateDisconnectPacket("Outdated server");
+					} else {
+						error = generateDisconnectPacket("Internal protocol error");
+					}
+					
+					try {
+						this.socketOutputStream.write(error);
+						this.socketOutputStream.flush();
+					}catch(Exception e) {
+					}
+					try {
+						DataFrame frame = new BinaryFrame();
+						frame.setPayload(ByteBuffer.wrap(error));
+						frame.setFin(true);
+						this.webSocket.sendFrame(frame);
+					} catch(Exception e) {
+					}
+					protocolMatcher.hasSent = true;
+				}
+				return; //Wait for proxy to time out connection
+			}
 			try {
-				byte[] data = new byte[pkt.remaining()];
-				pkt.get(data);
-				socketOutputStream.write(data);
-				socketOutputStream.flush();
+				this.socketOutputStream.write(data);
+				this.socketOutputStream.flush();
 				this.webSocketLastRead = System.currentTimeMillis();
 			} catch (Exception e) {
 			}
@@ -90,7 +127,7 @@ public class WebsocketNetworkManager {
 				}
 			}
 			LOGGER.info(ip + " disconnected!");
-			if(isWebSocketOpen()) {
+			if(this.isWebSocketOpen()) {
 				try {
 					DataFrame frame = new BinaryFrame();
 					frame.setPayload(ByteBuffer.wrap(generateDisconnectPacket(disconnected ? "Connected closed" : "Timed out")));

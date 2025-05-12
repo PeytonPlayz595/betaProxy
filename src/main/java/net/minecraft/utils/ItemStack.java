@@ -1,4 +1,4 @@
-package net.minecraft.network.v8;
+package net.minecraft.utils;
 
 public class ItemStack {
 	

@@ -4,6 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import net.minecraft.utils.ItemStack;
+
 public class Packet15Place extends Packet {
 	public int id;
 	public int xPosition;
