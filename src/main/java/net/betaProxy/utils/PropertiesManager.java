@@ -25,8 +25,9 @@ public class PropertiesManager {
 		String s = propertiesMap.get(key);
 		if(s == null) {
 			if(!resetting) {
-				Main.getLogger().warn("Properties file has no value for '" + key + "'!");
-				Main.getLogger().warn("Resetting properties file (restart required)!");
+				Main.getLogger().warn("Properties file has no value for '" + key + "'");
+				Main.getLogger().info("Using fallback value for '" + key + "'");
+				Main.getLogger().warn("Resetting properties file (restart required)");
 				if(this.propertiesFile.exists()) {
 					this.propertiesFile.delete();
 				}
@@ -37,10 +38,12 @@ public class PropertiesManager {
 		return s;
 	}
 	
-	public String getProperty(String value) {
-		String s = propertiesMap.get(value);
+	public String getProperty(String key) {
+		String s = propertiesMap.get(key);
 		if(s == null) {
-			throw new RuntimeException(new IOException("Properties file is broken! This is NOT a bug, please try to fix this yourself..."));
+			Main.getLogger().warn("Properties file has no value for '" + key + "'");
+			Main.getLogger().error("No default/fallback value set for '" + key + "'");
+			throw new RuntimeException("Properties file is broken, this is NOT a bug please try to fix this yourself");
 		}
 		return s;
 	}
@@ -85,6 +88,7 @@ public class PropertiesManager {
 				writer.println("minecraft_host=0.0.0.0:25565");
 				writer.println("minecraft_pvn=8");
 				writer.println("websocket_host=0.0.0.0:8080");
+				writer.println("\nwhitelist_enabled=false");
 			}
 		} else {
 			fixPropertiesFile(this.propertiesFile);
@@ -113,6 +117,7 @@ public class PropertiesManager {
 			boolean mcAddr = false;
 			boolean mcPvn = false;
 			boolean wsAddr = false;
+			boolean whitelist = false;
 			for (Map.Entry<String, String> entry : propertiesMap.entrySet()) {
 				String key = entry.getKey();
 				String value = entry.getValue();
@@ -136,6 +141,9 @@ public class PropertiesManager {
 					if(key.equals("minecraft_pvn")) {
 						mcPvn = true;
 					}
+					if(key.equals("whitelist_enabled")) {
+						whitelist = true;
+					}
 					writer.println(key + "=" + value);
 				}
 			}
@@ -148,6 +156,9 @@ public class PropertiesManager {
 			}
 			if(!wsAddr) {
 				writer.println("websocket_host=0.0.0.0:8080");
+			}
+			if(!whitelist) {
+				writer.println("\nwhitelist_enabled=false");
 			}
 		}
 	}

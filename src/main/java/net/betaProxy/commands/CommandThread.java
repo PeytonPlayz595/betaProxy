@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import net.betaProxy.main.Main;
+
 public class CommandThread extends Thread {
 	
 	public CommandThread() {
@@ -28,6 +30,8 @@ public class CommandThread extends Thread {
 					} else {
 						cmd.processCommand(null);
 					}
+				} else {
+					Main.getLogger().info("Unknown command, use command 'help' for more info");
 				}
 			}
 		} catch(IOException e) {

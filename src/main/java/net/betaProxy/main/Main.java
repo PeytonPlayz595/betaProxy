@@ -32,11 +32,14 @@ public class Main {
 	private static PropertiesManager propertiesManager;
 	private static final File dataDir = new File("config");
 	private static final File ipBanFile = new File(dataDir, "banned-ips.txt");
+	private static final File whiteListFile = new File(dataDir, "banned-ips.txt");
+	private static boolean whiteListEnabled = false;
 	
 	private static WebsocketServerListener wsNetManager;
 	private static InetSocketAddress mcAddress;
 	
 	public static Set<String> bannedIPs = new HashSet<String>();
+	public static Set<String> whitelistedIPs = new HashSet<String>();
 	public static Set<WebSocket> connections = new HashSet<WebSocket>();
 	
 	public static void main(String[] args) {
@@ -48,6 +51,7 @@ public class Main {
 			dataDir.mkdirs();
 		}
 		loadBannedList();
+		loadWhiteList();
 		propertiesManager = new PropertiesManager(new File(dataDir, "server_properties.txt"));
 		
 		try {
@@ -63,13 +67,11 @@ public class Main {
 		String wsAddr = propertiesManager.getProperty("websocket_host", "0.0.0.0:8080");
 		String mcAddr = propertiesManager.getProperty("minecraft_host", "0.0.0.0:25565");
 		String pvnS = propertiesManager.getProperty("minecraft_pvn", "8");
+		String whitelist = propertiesManager.getProperty("whitelist_enabled", "false");
 		
-		int pvn;
-		try {
-			pvn = Integer.parseInt(pvnS);
-		} catch(Exception e) {
-			throw new RuntimeException("Invalid value for server protocol version: '" + pvnS + "'");
-		}
+		whiteListEnabled = Boolean.parseBoolean(whitelist);
+		
+		int pvn = Integer.parseInt(pvnS);
 		SupportedProtocolVersionInfo.setPNVVersion(pvn);
 		
 		InetSocketAddress inetWebsocketAddress = null;
@@ -159,6 +161,20 @@ public class Main {
 		LOGGER.info("Pardoned IP: " + ip.toLowerCase());
 	}
 	
+	public static void whitelistIP(String ip) {
+		Main.getLogger().info("Adding ip '" + ip + "' to the whitelist");
+		whitelistedIPs.add(ip.toLowerCase());
+		saveWhiteList();
+	}
+	
+	public static void removeIPFromWhitelist(String ip) {
+		Main.getLogger().info("Removing ip '" + ip + "' from whitelist");
+		if(whitelistedIPs.contains(ip.toLowerCase())) {
+			whitelistedIPs.remove(ip.toLowerCase());
+		}
+		saveWhiteList();
+	}
+	
 	private static void loadBannedList() {
 		try {
 			if(!ipBanFile.exists()) {
@@ -183,6 +199,30 @@ public class Main {
 		}
 	}
 	
+	private static void loadWhiteList() {
+		try {
+			if(!whiteListFile.exists()) {
+				whiteListFile.createNewFile();
+			}
+			
+			whitelistedIPs.clear();
+			BufferedReader var1 = new BufferedReader(new FileReader(whiteListFile));
+			String var2 = "";
+
+			while(true) {
+				var2 = var1.readLine();
+				if(var2 == null) {
+					var1.close();
+					break;
+				}
+
+				whitelistedIPs.add(var2.trim().toLowerCase());
+			}
+		} catch (Exception var3) {
+			LOGGER.warn("Failed to load ip white list: " + var3);
+		}
+	}
+	
 	private static void saveBannedList() {
 		try {
 			PrintWriter var1 = new PrintWriter(new FileWriter(ipBanFile, false));
@@ -198,6 +238,27 @@ public class Main {
 			LOGGER.warn("Failed to save ip ban list: " + var4);
 		}
 
+	}
+	
+	private static void saveWhiteList() {
+		try {
+			PrintWriter var1 = new PrintWriter(new FileWriter(whiteListFile, false));
+			Iterator<String> var2 = whitelistedIPs.iterator();
+
+			while(var2.hasNext()) {
+				String var3 = var2.next();
+				var1.println(var3);
+			}
+
+			var1.close();
+		} catch (Exception var4) {
+			LOGGER.warn("Failed to save ip white list: " + var4);
+		}
+
+	}
+	
+	public static boolean isWhitelistEnabled() {
+		return whiteListEnabled;
 	}
 
 }

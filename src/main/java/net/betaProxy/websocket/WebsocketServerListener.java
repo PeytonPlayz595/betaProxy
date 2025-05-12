@@ -63,6 +63,16 @@ public class WebsocketServerListener extends WebSocketServer {
 	
 	@Override
 	public void onOpen(WebSocket arg0, ClientHandshake arg1) {
+		if(Main.isWhitelistEnabled()) {
+			if(!Main.whitelistedIPs.contains(arg0.getRemoteSocketAddress().getHostString())) {
+				DataFrame frame = new BinaryFrame();
+				frame.setPayload(ByteBuffer.wrap(WebsocketNetworkManager.generateDisconnectPacket("You are not whitelisted on this server")));
+				frame.setFin(true);
+				arg0.sendFrame(frame);
+				WebsocketNetworkManager.LOGGER.info("Disconnecting non-whitelisted IP: " + arg0.getRemoteSocketAddress().getHostString());
+				return;
+			}
+		}
 		if(Main.bannedIPs.contains(arg0.getRemoteSocketAddress().getHostString())) {
 			DataFrame frame = new BinaryFrame();
 			frame.setPayload(ByteBuffer.wrap(WebsocketNetworkManager.generateDisconnectPacket("You are banned from this server")));

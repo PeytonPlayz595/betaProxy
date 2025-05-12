@@ -8,7 +8,9 @@ public class CommandsList {
 	private static final Command[] commands = new Command[] { 
 			new CommandBan("ban-ip "), 
 			new CommandPardon("pardon-ip "),
-			new CommandHelp("help"),
+			new CommandAddWhitelist("whitelist-add "),
+			new CommandRemoveWhitelist("whitelist-remove "),
+			new CommandHelp("help")
 	};
 	
 	public static Command getCommand(String cmd) {
