@@ -23,7 +23,11 @@ public class CommandThread extends Thread {
 				
 				Command cmd = CommandsList.getCommand(s);
 				if(cmd != null) {
-					cmd.processCommand(s.substring(s.indexOf(" ")).trim());
+					if(cmd.hasArgs) {
+						cmd.processCommand(s.substring(s.indexOf(" ")).trim());
+					} else {
+						cmd.processCommand(null);
+					}
 				}
 			}
 		} catch(IOException e) {

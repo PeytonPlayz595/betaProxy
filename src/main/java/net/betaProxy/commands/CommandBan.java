@@ -12,4 +12,9 @@ public class CommandBan extends Command {
 		Main.banIP(arg);
 	}
 
+	@Override
+	public String getCommandDescription() {
+		return "bans an ip from the proxy";
+	}
+
 }

@@ -13,4 +13,9 @@ public class CommandPardon extends Command {
 		Main.pardonIP(arg);
 	}
 
+	@Override
+	public String getCommandDescription() {
+		return "pardons (unbans) an ip from the proxy";
+	}
+
 }
