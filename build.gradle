@@ -1,0 +1,54 @@
+plugins {
+    id "java"
+    id "eclipse"
+    id "application"
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs(
+                "src/main/java"
+            )
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation fileTree(dir: './jars/', include: '*.jar')
+}
+
+application {
+    mainClass = "net.betaProxy.main.Main"
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    manifest {
+        attributes 'Main-Class': "net.betaProxy.main.Main"
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+tasks.register('runclient', JavaExec) {
+    jvmArgs "-Djava.library.path=" + System.getProperty("user.dir")
+    classpath = sourceSets.main.compileClasspath
+    group = "betaProxy"
+    description = "Runs the Server"
+    classpath sourceSets.main.runtimeClasspath
+    if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+        jvmArgs '-XstartOnFirstThread'
+    }
+
+    workingDir "./"
+    main 'net.betaProxy.main.Main'
+}
