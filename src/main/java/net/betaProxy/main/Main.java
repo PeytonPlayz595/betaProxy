@@ -1,13 +1,27 @@
 package net.betaProxy.main;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
+import org.java_websocket.WebSocket;
+import org.java_websocket.framing.BinaryFrame;
+import org.java_websocket.framing.DataFrame;
+
+import net.betaProxy.commands.CommandThread;
 import net.betaProxy.utils.LoggerRedirector;
 import net.betaProxy.utils.PropertiesManager;
 import net.betaProxy.utils.SupportedProtocolVersionInfo;
+import net.betaProxy.websocket.WebsocketNetworkManager;
 import net.betaProxy.websocket.WebsocketServerListener;
 import net.lax1dude.log4j.LogManager;
 import net.lax1dude.log4j.Logger;
@@ -17,18 +31,23 @@ public class Main {
 	private static Logger LOGGER = LogManager.getLogger("Beta Proxy");
 	private static PropertiesManager propertiesManager;
 	private static final File dataDir = new File("config");
+	private static final File ipBanFile = new File(dataDir, "banned-ips.txt");
 	
 	private static WebsocketServerListener wsNetManager;
 	private static InetSocketAddress mcAddress;
+	
+	public static Set<String> bannedIPs = new HashSet<String>();
+	public static Set<WebSocket> connections = new HashSet<WebSocket>();
 	
 	public static void main(String[] args) {
 		System.setOut(new LoggerRedirector("STDOUT", false, System.out));
 		System.setErr(new LoggerRedirector("STDERR", true, System.err));
 		
-		LOGGER.info("Loading server properties...");
+		LOGGER.info("Loading configurations...");
 		if(!dataDir.exists()) {
 			dataDir.mkdirs();
 		}
+		loadBannedList();
 		propertiesManager = new PropertiesManager(new File(dataDir, "server_properties.txt"));
 		
 		try {
@@ -36,6 +55,10 @@ public class Main {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+		
+		CommandThread cmdThread = new CommandThread();
+		cmdThread.setDaemon(true);
+		cmdThread.start();
 		
 		String wsAddr = propertiesManager.getProperty("websocket_host", "0.0.0.0:8080");
 		String mcAddr = propertiesManager.getProperty("minecraft_host", "0.0.0.0:25565");
@@ -106,6 +129,75 @@ public class Main {
 	
 	public static Logger getLogger() {
 		return LOGGER;
+	}
+	
+	public static void banIP(String ip) {
+		bannedIPs.add(ip.toLowerCase());
+		LOGGER.info("Banning IP: " + ip.toLowerCase());
+		saveBannedList();
+		
+		Iterator<WebSocket> iterator = connections.iterator();
+		while(iterator.hasNext()) {
+			WebSocket socket = iterator.next();
+			if(socket.getRemoteSocketAddress().getHostString().equals(ip.toLowerCase())) {
+				try {
+					DataFrame frame = new BinaryFrame();
+					frame.setPayload(ByteBuffer.wrap(WebsocketNetworkManager.generateDisconnectPacket("You were banned")));
+					frame.setFin(true);
+					socket.sendFrame(frame);
+				} catch(Exception e) {
+				}
+			}
+		}
+	}
+	
+	public static void pardonIP(String ip) {
+		if(bannedIPs.contains(ip.toLowerCase())) {
+			bannedIPs.remove(ip.toLowerCase());
+		}
+		saveBannedList();
+		LOGGER.info("Pardoned IP: " + ip.toLowerCase());
+	}
+	
+	private static void loadBannedList() {
+		try {
+			if(!ipBanFile.exists()) {
+				ipBanFile.createNewFile();
+			}
+			
+			bannedIPs.clear();
+			BufferedReader var1 = new BufferedReader(new FileReader(ipBanFile));
+			String var2 = "";
+
+			while(true) {
+				var2 = var1.readLine();
+				if(var2 == null) {
+					var1.close();
+					break;
+				}
+
+				bannedIPs.add(var2.trim().toLowerCase());
+			}
+		} catch (Exception var3) {
+			LOGGER.warn("Failed to load ip ban list: " + var3);
+		}
+	}
+	
+	private static void saveBannedList() {
+		try {
+			PrintWriter var1 = new PrintWriter(new FileWriter(ipBanFile, false));
+			Iterator<String> var2 = bannedIPs.iterator();
+
+			while(var2.hasNext()) {
+				String var3 = var2.next();
+				var1.println(var3);
+			}
+
+			var1.close();
+		} catch (Exception var4) {
+			LOGGER.warn("Failed to save ip ban list: " + var4);
+		}
+
 	}
 
 }

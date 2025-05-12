@@ -15,7 +15,6 @@ import org.java_websocket.framing.DataFrame;
 
 import net.betaProxy.main.Main;
 import net.betaProxy.utils.ProtocolAwarePacketReader;
-import net.betaProxy.utils.Timer;
 import net.lax1dude.log4j.LogManager;
 import net.lax1dude.log4j.Logger;
 
@@ -30,12 +29,11 @@ public class WebsocketNetworkManager {
 	private volatile boolean running;
 	private boolean isShuttingDown = false;
 	
-	public int socketLastRead = 0;
-	public int webSocketLastRead = 0;
+	private long socketLastRead = System.currentTimeMillis();
+	private long webSocketLastRead = System.currentTimeMillis();
 	
-	private Logger LOGGER = LogManager.getLogger("NetworkManager");
-	
-	private Timer timer;
+	public static Logger LOGGER = LogManager.getLogger("NetworkManager");
+	private String ip;
 	
 	public WebsocketNetworkManager(WebSocket webSocket) throws IOException {
 		this.webSocket = webSocket;
@@ -46,18 +44,15 @@ public class WebsocketNetworkManager {
 		this.socketOutputStream = new DataOutputStream(socket.getOutputStream());
 		this.running = true;
 		final String s = Thread.currentThread().getName();
-		timer = new Timer(20.0f);
+		ip = webSocket.getRemoteSocketAddress().getHostString();
 		this.readerThread = new Thread(() -> {
 			Thread.currentThread().setName(s);
 		    while(running) {
-		    	this.timer.updateTimer();
-		    	for(int i = 0; i < this.timer.elapsedTicks; ++i) {
-		    		try {
-		    			checkDisconnected();
-						readPacket();
-					} catch (Exception e) {
-						LOGGER.error(e);
-					}
+		    	try {
+		    		checkDisconnected();
+		    		readPacket();
+		    	} catch (Exception e) {
+		    		e.printStackTrace();
 		    	}
 		    }
 		});
@@ -72,22 +67,21 @@ public class WebsocketNetworkManager {
 				pkt.get(data);
 				socketOutputStream.write(data);
 				socketOutputStream.flush();
-				this.webSocketLastRead = 0;
-			} catch (IOException e) {
+				this.webSocketLastRead = System.currentTimeMillis();
+			} catch (Exception e) {
 			}
 		}
 	}
 	
 	void checkDisconnected() {
-		++this.socketLastRead;
-		++this.webSocketLastRead;
+		long currentTime = System.currentTimeMillis();
 		
 		if(this.isShuttingDown || !this.running) {
 			return;
 		}
 		
-		boolean disconnected = !this.socket.isConnected() || !this.webSocket.isOpen();
-		if(this.socketLastRead == 1200 || this.webSocketLastRead == 1200 || disconnected) {
+		boolean disconnected = !this.isConnectionOpen() || !this.isWebSocketOpen();
+		if(currentTime >= (socketLastRead + 2*1000) || currentTime >= (webSocketLastRead + 2*1000) || disconnected) {
 			if(this.isConnectionOpen()) {
 				this.addToSendQueue(ByteBuffer.wrap(generateDisconnectPacket(disconnected ? "Connected closed" : "Timed out")));
 				try {
@@ -95,16 +89,19 @@ public class WebsocketNetworkManager {
 				} catch(IOException e) {
 				}
 			}
-			LOGGER.info(this.webSocket.getRemoteSocketAddress().toString() + " disconnected!");
+			LOGGER.info(ip + " disconnected!");
 			if(isWebSocketOpen()) {
-				DataFrame frame = new BinaryFrame();
-				frame.setPayload(ByteBuffer.wrap(generateDisconnectPacket(disconnected ? "Connected closed" : "Timed out")));
-				frame.setFin(true);
 				try {
+					DataFrame frame = new BinaryFrame();
+					frame.setPayload(ByteBuffer.wrap(generateDisconnectPacket(disconnected ? "Connected closed" : "Timed out")));
+					frame.setFin(true);
 					this.webSocket.sendFrame(frame);
 				} catch(Exception e) {
 				}
-				this.webSocket.close();
+				try {
+					this.webSocket.close();
+				} catch(Exception e) {
+				}
 			}
 			this.running = false;
 		}
@@ -126,25 +123,25 @@ public class WebsocketNetworkManager {
 			try {
 				byte[] packet = ProtocolAwarePacketReader.defragment(this.socketInputStream);
 				if(packet != null && packet.length > 0 && isWebSocketOpen()) {
-					DataFrame frame = new BinaryFrame();
-					frame.setPayload(ByteBuffer.wrap(packet));
-					frame.setFin(true);
 					try {
+						DataFrame frame = new BinaryFrame();
+						frame.setPayload(ByteBuffer.wrap(packet));
+						frame.setFin(true);
 						this.webSocket.sendFrame(frame);
 					} catch(Exception e) {
 					}
-					this.socketLastRead = 0;
+					this.socketLastRead = System.currentTimeMillis();
 				}
-			} catch(IOException e) {
+			} catch(Exception e) {
 			}
 		}
 	}
 	
 	private boolean isWebSocketOpen() {
-		return this.webSocket.getReadyState() == ReadyState.OPEN || this.webSocket.isOpen();
+		return this.webSocket != null && this.webSocket.getReadyState() == ReadyState.OPEN && this.webSocket.isOpen() && !this.webSocket.isClosing() && !this.webSocket.isClosed();
 	}
 	
 	public boolean isConnectionOpen() {
-		return !this.socket.isClosed();
+		return this.socket != null && !this.socket.isClosed() && !this.socket.isInputShutdown() && !this.socket.isOutputShutdown();
 	}
 }

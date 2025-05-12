@@ -5,8 +5,12 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
 import org.java_websocket.WebSocket;
+import org.java_websocket.framing.BinaryFrame;
+import org.java_websocket.framing.DataFrame;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+
+import net.betaProxy.main.Main;
 
 public class WebsocketServerListener extends WebSocketServer {
 
@@ -27,6 +31,7 @@ public class WebsocketServerListener extends WebSocketServer {
 	public void onClose(WebSocket arg0, int arg1, String arg2, boolean arg3) {
 		WebsocketNetworkManager mgr = arg0.getAttachment();
 		mgr.checkDisconnected();
+		Main.connections.remove(arg0);
 	}
 	
 	@Override
@@ -42,7 +47,10 @@ public class WebsocketServerListener extends WebSocketServer {
 	
 	@Override
 	public void onMessage(WebSocket arg0, String arg1) {
-		arg0.send(WebsocketNetworkManager.generateDisconnectPacket("Received string frames on a binary connection"));
+		DataFrame frame = new BinaryFrame();
+		frame.setPayload(ByteBuffer.wrap(WebsocketNetworkManager.generateDisconnectPacket("Received string frames on a binary connection")));
+		frame.setFin(true);
+		arg0.sendFrame(frame);
 	}
 	
 	@Override
@@ -55,11 +63,23 @@ public class WebsocketServerListener extends WebSocketServer {
 	
 	@Override
 	public void onOpen(WebSocket arg0, ClientHandshake arg1) {
+		if(Main.bannedIPs.contains(arg0.getRemoteSocketAddress().getHostString())) {
+			DataFrame frame = new BinaryFrame();
+			frame.setPayload(ByteBuffer.wrap(WebsocketNetworkManager.generateDisconnectPacket("You are banned from this server")));
+			frame.setFin(true);
+			arg0.sendFrame(frame);
+			WebsocketNetworkManager.LOGGER.info("Disconnecting banned IP: " + arg0.getRemoteSocketAddress().getHostString());
+			return;
+		}
 		try {
 			WebsocketNetworkManager mngr = new WebsocketNetworkManager(arg0);
 			arg0.setAttachment(mngr);
+			Main.connections.add(arg0);
 		} catch (IOException e) {
-			arg0.send(WebsocketNetworkManager.generateDisconnectPacket("Connection refused"));
+			DataFrame frame = new BinaryFrame();
+			frame.setPayload(ByteBuffer.wrap(WebsocketNetworkManager.generateDisconnectPacket("Connection refused")));
+			frame.setFin(true);
+			arg0.sendFrame(frame);
 			e.printStackTrace();
 		}
 	}
