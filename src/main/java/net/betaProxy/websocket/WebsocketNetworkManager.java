@@ -16,11 +16,8 @@ import org.java_websocket.framing.DataFrame;
 import net.betaProxy.main.Main;
 import net.betaProxy.utils.ClientServerProtocolMatcher;
 import net.betaProxy.utils.ProtocolAwarePacketReader;
-import net.betaProxy.utils.SupportedProtocolVersionInfo;
 import net.lax1dude.log4j.LogManager;
 import net.lax1dude.log4j.Logger;
-import net.minecraft.network.local.LoginPacket;
-import net.minecraft.network.local.ServerPacket;
 
 public class WebsocketNetworkManager {
 	

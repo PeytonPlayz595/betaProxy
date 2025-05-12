@@ -3,21 +3,22 @@ package net.minecraft.network.local;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.betaProxy.suppliers.local.ILocalPacketSupplier;
-import net.betaProxy.utils.ByteBufferInputStream;
 
 /*
  * This is used for mapping packet data
  * across multiple different protocols or
  * to verify that the data received in a
  * packet is consistant with the servers
- * protocol version.
- */
+ * protocol version. This can also be used
+ * for custom plugins specific to this proxy
+ * like for skins, cape packets or even some
+ * sort of authentication for eagler players.
+  */
 public abstract class ServerPacket {
 	
 	private static Map<Integer, ILocalPacketSupplier<ServerPacket>> idToSupplier = new ConcurrentHashMap<Integer, ILocalPacketSupplier<ServerPacket>>();

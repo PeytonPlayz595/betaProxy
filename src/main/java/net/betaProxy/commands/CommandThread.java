@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import net.betaProxy.main.Main;
-
 public class CommandThread extends Thread {
 	
 	public CommandThread() {
@@ -22,12 +20,10 @@ public class CommandThread extends Thread {
 				if(s == null) {
 					break;
 				}
-				if(s.toLowerCase().startsWith("ban-ip ")) {
-					String s1 = s.substring(s.indexOf(" ")).trim();
-					Main.banIP(s1);
-				} else if(s.toLowerCase().startsWith("pardon-ip ")) {
-					String s1 = s.substring(s.indexOf(" ")).trim();
-					Main.pardonIP(s1);
+				
+				Command cmd = CommandsList.getCommand(s);
+				if(cmd != null) {
+					cmd.processCommand(s.substring(s.indexOf(" ")).trim());
 				}
 			}
 		} catch(IOException e) {
