@@ -14,7 +14,7 @@ import net.betaProxy.suppliers.local.ILocalPacketSupplier;
  * across multiple different protocols or
  * to verify that the data received in a
  * packet is consistant with the servers
- * protocol version. This can also be used
+ * protocol. This can also be used
  * for custom plugins specific to this proxy
  * like for skins, cape packets or even some
  * sort of authentication for eagler players.

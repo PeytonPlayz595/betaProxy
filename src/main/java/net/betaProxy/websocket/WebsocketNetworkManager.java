@@ -115,7 +115,7 @@ public class WebsocketNetworkManager {
 		}
 		
 		boolean disconnected = !this.isConnectionOpen() || !this.isWebSocketOpen();
-		if(currentTime >= (socketLastRead + 2*1000) || currentTime >= (webSocketLastRead + 2*1000) || disconnected) {
+		if(currentTime >= (socketLastRead + 10*1000) || currentTime >= (webSocketLastRead + 10*1000) || disconnected) {
 			if(this.isConnectionOpen()) {
 				this.addToSendQueue(ByteBuffer.wrap(generateDisconnectPacket(disconnected ? "Connected closed" : "Timed out")));
 				try {
