@@ -17,12 +17,16 @@ Yes, as of right now only one of my ports uses this but Beta Proxy supports mult
 # How do I use this?
 
 ### Running
-  - Running the server is extremely simple and self explanitory. Make sure you have at least Java 8 installed, download the latest JAR from releases and run the jar file from within a terminal `java -jar betaProxy.jar` 
+  - Running the server is extremely simple and self explanitory. Make sure you have at least Java 8 installed, download the latest JAR from [releases](https://github.com/PeytonPlayz595/betaProxy/releases) and run the jar file from within a terminal `java -jar betaProxy.jar` 
 
-### Server Config (`server_properties.txt`):
+### Server config (`server.properties`):
   - `minecraft_host`: The IP address of the Minecraft server you wish to proxy to a WebSocket connection.
   - `minecraft_pvn`: The Protocol Version Number the Minecraft server uses.
   - `websocket_host`: The IP address where the WebSocket is hosted (This is what eagler players use to connect to the server).
+  - `whitelist_enabled`: Decides if the proxy uses a whitelist or not
+  - `timeout`: The amount of time (in seconds) the proxy goes without receiving data before it times out the connection (must be in rage of 5-60 seconds)
+
+Note: I recommend using the default timeout which is 15 seconds
 
 # Server PVN
 
