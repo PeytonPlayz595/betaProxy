@@ -30,9 +30,8 @@ public class Main {
 	
 	private static Logger LOGGER = LogManager.getLogger("Beta Proxy");
 	private static PropertiesManager propertiesManager;
-	private static final File dataDir = new File("config");
-	private static final File ipBanFile = new File(dataDir, "banned-ips.txt");
-	private static final File whiteListFile = new File(dataDir, "banned-ips.txt");
+	private static final File ipBanFile = new File("banned-ips.txt");
+	private static final File whiteListFile = new File("banned-ips.txt");
 	private static boolean whiteListEnabled = false;
 	
 	private static WebsocketServerListener wsNetManager;
@@ -47,18 +46,9 @@ public class Main {
 		System.setErr(new LoggerRedirector("STDERR", true, System.err));
 		
 		LOGGER.info("Loading configurations...");
-		if(!dataDir.exists()) {
-			dataDir.mkdirs();
-		}
 		loadBannedList();
 		loadWhiteList();
-		propertiesManager = new PropertiesManager(new File(dataDir, "server_properties.txt"));
-		
-		try {
-			propertiesManager.loadProperties();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		propertiesManager = new PropertiesManager(new File("server.properties"));
 		
 		CommandThread cmdThread = new CommandThread();
 		cmdThread.setDaemon(true);
@@ -66,12 +56,9 @@ public class Main {
 		
 		String wsAddr = propertiesManager.getProperty("websocket_host", "0.0.0.0:8080");
 		String mcAddr = propertiesManager.getProperty("minecraft_host", "0.0.0.0:25565");
-		String pvnS = propertiesManager.getProperty("minecraft_pvn", "8");
-		String whitelist = propertiesManager.getProperty("whitelist_enabled", "false");
+		int pvn = propertiesManager.getProperty("minecraft_pvn", 8);
+		whiteListEnabled = propertiesManager.getProperty("whitelist_enabled", false);
 		
-		whiteListEnabled = Boolean.parseBoolean(whitelist);
-		
-		int pvn = Integer.parseInt(pvnS);
 		SupportedProtocolVersionInfo.setPNVVersion(pvn);
 		
 		InetSocketAddress inetWebsocketAddress = null;
