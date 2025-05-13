@@ -41,6 +41,8 @@ public class Main {
 	public static Set<String> whitelistedIPs = new HashSet<String>();
 	public static Set<WebSocket> connections = new HashSet<WebSocket>();
 	
+	private static int timeout = 0;
+	
 	public static void main(String[] args) {
 		System.setOut(new LoggerRedirector("STDOUT", false, System.out));
 		System.setErr(new LoggerRedirector("STDERR", true, System.err));
@@ -58,6 +60,11 @@ public class Main {
 		String mcAddr = propertiesManager.getProperty("minecraft_host", "0.0.0.0:25565");
 		int pvn = propertiesManager.getProperty("minecraft_pvn", 8);
 		whiteListEnabled = propertiesManager.getProperty("whitelist_enabled", false);
+		timeout = propertiesManager.getProperty("timeout", 15);
+		
+		if(timeout < 5 || timeout > 60) {
+			throw new RuntimeException("Timeout value is invalid. It must be between 5-60 seconds");
+		}
 		
 		SupportedProtocolVersionInfo.setPNVVersion(pvn);
 		
@@ -246,6 +253,10 @@ public class Main {
 	
 	public static boolean isWhitelistEnabled() {
 		return whiteListEnabled;
+	}
+	
+	public static int getTimeout() {
+		return timeout;
 	}
 
 }
