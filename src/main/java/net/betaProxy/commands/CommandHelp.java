@@ -3,6 +3,7 @@ package net.betaProxy.commands;
 import java.util.List;
 
 import net.betaProxy.main.Main;
+import net.betaProxy.server.Server;
 
 public class CommandHelp extends Command {
 
@@ -12,12 +13,12 @@ public class CommandHelp extends Command {
 	}
 
 	@Override
-	public void processCommand(String arg) {
+	public void processCommand(String arg, Server server) {
 		List<Command> cmds = CommandsList.getCommandList();
-		Main.getLogger().info("List of commands:");
+		server.getLogger().info("List of commands:");
 		for(int i = 0; i < cmds.size(); ++i) {
 			Command cmd = cmds.get(i);
-			Main.getLogger().info("- " + (cmd.hasArgs ? cmd.name.replace(" ", ": ") : cmd.name + ": ") + cmd.getCommandDescription());
+			server.getLogger().info("- " + (cmd.hasArgs ? cmd.name.replace(" ", ": ") : cmd.name + ": ") + cmd.getCommandDescription());
 		}
 	}
 

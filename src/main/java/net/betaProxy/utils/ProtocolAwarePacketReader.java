@@ -4,11 +4,19 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 
-import net.betaProxy.main.Main;
+import net.betaProxy.server.Server;
 
 public class ProtocolAwarePacketReader {
 	
-	public static byte[] defragment(DataInputStream is) throws IOException {
+	private Server server;
+	private int pvn;
+	
+	public ProtocolAwarePacketReader(Server server, int pvn) {
+		this.server = server;
+		this.pvn = pvn;
+	}
+	
+	public byte[] defragment(DataInputStream is) throws IOException {
 		is.mark(4096);
 		
 		byte[] data = null;
@@ -19,14 +27,14 @@ public class ProtocolAwarePacketReader {
 		} catch(IOException e) {
 			is.reset();
 			int i = is.read();
-			Main.getLogger().error("Received invalid packet with ID '" + i + "'!");
+			server.getLogger().error("Received invalid packet with ID '" + i + "'!");
 		}
 		
 		return data;
 	}
 	
-	private static byte[] readPacket(DataInputStream is) throws IOException {
-		switch(SupportedProtocolVersionInfo.getServerPVN()) {
+	private byte[] readPacket(DataInputStream is) throws IOException {
+		switch(pvn) {
 		case 8:
 			return net.minecraft.network.v8.Packet.readPacket(is);
 		case 7:

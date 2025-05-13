@@ -1,6 +1,6 @@
 package net.betaProxy.commands;
 
-import net.betaProxy.main.Main;
+import net.betaProxy.server.Server;
 
 public class CommandBan extends Command {
 
@@ -8,8 +8,8 @@ public class CommandBan extends Command {
 		super(name);
 	}
 
-	public void processCommand(String arg) {
-		Main.banIP(arg);
+	public void processCommand(String arg, Server server) {
+		server.banIP(arg);
 	}
 
 	@Override

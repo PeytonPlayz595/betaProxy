@@ -10,7 +10,7 @@ import org.java_websocket.framing.DataFrame;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
-import net.betaProxy.main.Main;
+import net.betaProxy.server.Server;
 
 public class WebsocketServerListener extends WebSocketServer {
 
@@ -18,8 +18,11 @@ public class WebsocketServerListener extends WebSocketServer {
 	public volatile boolean startupFailed;
 	public volatile boolean started;
 	
-	public WebsocketServerListener(InetSocketAddress addr) {
+	private Server server;
+	
+	public WebsocketServerListener(InetSocketAddress addr, Server server) {
 		super(addr);
+		this.server = server;
 		this.startupFailed = false;
 		this.started = false;
 		this.setConnectionLostTimeout(15);
@@ -31,7 +34,7 @@ public class WebsocketServerListener extends WebSocketServer {
 	public void onClose(WebSocket arg0, int arg1, String arg2, boolean arg3) {
 		WebsocketNetworkManager mgr = arg0.getAttachment();
 		mgr.checkDisconnected();
-		Main.connections.remove(arg0);
+		server.getConnections().remove(arg0);
 	}
 	
 	@Override
@@ -63,8 +66,8 @@ public class WebsocketServerListener extends WebSocketServer {
 	
 	@Override
 	public void onOpen(WebSocket arg0, ClientHandshake arg1) {
-		if(Main.isWhitelistEnabled()) {
-			if(!Main.whitelistedIPs.contains(arg0.getRemoteSocketAddress().getHostString())) {
+		if(server.isWhitelistEnabled()) {
+			if(!server.getWhitelist().contains(arg0.getRemoteSocketAddress().getHostString())) {
 				DataFrame frame = new BinaryFrame();
 				frame.setPayload(ByteBuffer.wrap(WebsocketNetworkManager.generateDisconnectPacket("You are not whitelisted on this server")));
 				frame.setFin(true);
@@ -73,7 +76,7 @@ public class WebsocketServerListener extends WebSocketServer {
 				return;
 			}
 		}
-		if(Main.bannedIPs.contains(arg0.getRemoteSocketAddress().getHostString())) {
+		if(server.getBannedIPs().contains(arg0.getRemoteSocketAddress().getHostString())) {
 			DataFrame frame = new BinaryFrame();
 			frame.setPayload(ByteBuffer.wrap(WebsocketNetworkManager.generateDisconnectPacket("You are banned from this server")));
 			frame.setFin(true);
@@ -82,9 +85,9 @@ public class WebsocketServerListener extends WebSocketServer {
 			return;
 		}
 		try {
-			WebsocketNetworkManager mngr = new WebsocketNetworkManager(arg0);
+			WebsocketNetworkManager mngr = new WebsocketNetworkManager(arg0, server);
 			arg0.setAttachment(mngr);
-			Main.connections.add(arg0);
+			server.getConnections().add(arg0);
 		} catch (IOException e) {
 			DataFrame frame = new BinaryFrame();
 			frame.setPayload(ByteBuffer.wrap(WebsocketNetworkManager.generateDisconnectPacket("Connection refused")));

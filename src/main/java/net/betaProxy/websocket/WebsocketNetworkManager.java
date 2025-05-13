@@ -14,8 +14,10 @@ import org.java_websocket.framing.BinaryFrame;
 import org.java_websocket.framing.DataFrame;
 
 import net.betaProxy.main.Main;
+import net.betaProxy.server.Server;
 import net.betaProxy.utils.ClientServerProtocolMatcher;
 import net.betaProxy.utils.ProtocolAwarePacketReader;
+import net.betaProxy.utils.SupportedProtocolVersionInfo;
 import net.lax1dude.log4j.LogManager;
 import net.lax1dude.log4j.Logger;
 
@@ -37,10 +39,13 @@ public class WebsocketNetworkManager {
 	private String ip;
 	
 	private ClientServerProtocolMatcher protocolMatcher;
+	private ProtocolAwarePacketReader packetReader;
+	private Server server;
 	
-	public WebsocketNetworkManager(WebSocket webSocket) throws IOException {
+	public WebsocketNetworkManager(WebSocket webSocket, Server server) throws IOException {
 		this.webSocket = webSocket;
-		InetSocketAddress addr = Main.getMinecraftAddress();
+		this.server = server;
+		InetSocketAddress addr = server.getMinecraftSocketAddress();
 		this.socket = new Socket(addr.getHostString(), addr.getPort());
 		this.socket.setTrafficClass(24);
 		this.socketInputStream = new DataInputStream(socket.getInputStream());
@@ -49,6 +54,7 @@ public class WebsocketNetworkManager {
 		final String s = Thread.currentThread().getName();
 		this.ip = webSocket.getRemoteSocketAddress().getHostString();
 		this.protocolMatcher = new ClientServerProtocolMatcher();
+		this.packetReader = new ProtocolAwarePacketReader(server, SupportedProtocolVersionInfo.getServerPVN());
 		this.readerThread = new Thread(() -> {
 			Thread.currentThread().setName(s);
 		    while(running) {
@@ -115,7 +121,7 @@ public class WebsocketNetworkManager {
 		}
 		
 		boolean disconnected = !this.isConnectionOpen() || !this.isWebSocketOpen();
-		if(currentTime >= (socketLastRead + Main.getTimeout()*1000) || currentTime >= (webSocketLastRead + Main.getTimeout()*1000) || disconnected) {
+		if(currentTime >= (socketLastRead + server.getTimeout()*1000) || currentTime >= (webSocketLastRead + server.getTimeout()*1000) || disconnected) {
 			if(this.isConnectionOpen()) {
 				this.addToSendQueue(ByteBuffer.wrap(generateDisconnectPacket(disconnected ? "Connected closed" : "Timed out")));
 				try {
@@ -155,7 +161,7 @@ public class WebsocketNetworkManager {
 	public void readPacket() {
 		if(this.running && this.isConnectionOpen()) {
 			try {
-				byte[] packet = ProtocolAwarePacketReader.defragment(this.socketInputStream);
+				byte[] packet = packetReader.defragment(this.socketInputStream);
 				if(packet != null && packet.length > 0 && isWebSocketOpen()) {
 					try {
 						DataFrame frame = new BinaryFrame();

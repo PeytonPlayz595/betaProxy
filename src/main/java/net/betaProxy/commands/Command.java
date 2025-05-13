@@ -1,5 +1,7 @@
 package net.betaProxy.commands;
 
+import net.betaProxy.server.Server;
+
 public abstract class Command {
 	
 	public String name;
@@ -10,7 +12,7 @@ public abstract class Command {
 		hasArgs = true;
 	}
 	
-	public abstract void processCommand(String arg);
+	public abstract void processCommand(String arg, Server server);
 	
 	public abstract String getCommandDescription();
 

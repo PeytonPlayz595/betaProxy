@@ -1,6 +1,6 @@
 package net.betaProxy.commands;
 
-import net.betaProxy.main.Main;
+import net.betaProxy.server.Server;
 
 public class CommandAddWhitelist extends Command {
 
@@ -9,8 +9,8 @@ public class CommandAddWhitelist extends Command {
 	}
 
 	@Override
-	public void processCommand(String arg) {
-		Main.whitelistIP(arg);
+	public void processCommand(String arg, Server server) {
+		server.whitelistIP(arg);
 	}
 
 	@Override

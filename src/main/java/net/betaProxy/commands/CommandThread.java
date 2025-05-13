@@ -4,12 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import net.betaProxy.main.Main;
+import net.betaProxy.server.Server;
 
 public class CommandThread extends Thread {
 	
-	public CommandThread() {
-		
+	private Server server;
+	
+	public CommandThread(Server server) {
+		this.server = server;
 	}
 	
 	@Override
@@ -26,12 +28,12 @@ public class CommandThread extends Thread {
 				Command cmd = CommandsList.getCommand(s);
 				if(cmd != null) {
 					if(cmd.hasArgs) {
-						cmd.processCommand(s.substring(s.indexOf(" ")).trim());
+						cmd.processCommand(s.substring(s.indexOf(" ")).trim(), server);
 					} else {
-						cmd.processCommand(null);
+						cmd.processCommand(null, server);
 					}
 				} else {
-					Main.getLogger().info("Unknown command, use command 'help' for more info");
+					server.getLogger().info("Unknown command, use command 'help' for more info");
 				}
 			}
 		} catch(IOException e) {
