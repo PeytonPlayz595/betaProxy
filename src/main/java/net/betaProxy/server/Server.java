@@ -28,7 +28,7 @@ import net.lax1dude.log4j.LogManager;
 import net.lax1dude.log4j.Logger;
 
 public class Server {
-	
+	public String serverConnectorName = "";
 	private Logger LOGGER = LogManager.getLogger("Beta Proxy");
 	private PropertiesManager propertiesManager;
 	private final File ipBanFile = new File("banned-ips.txt");
@@ -41,7 +41,7 @@ public class Server {
 	private Set<String> bannedIPs = new HashSet<String>();
 	private Set<String> whitelistedIPs = new HashSet<String>();
 	private Set<WebSocket> connections = new HashSet<WebSocket>();
-	
+
 	private int timeout = 0;
 	
 	public Server() {
@@ -55,12 +55,12 @@ public class Server {
 		LOGGER.info("Loading configurations...");
 		loadBannedList();
 		loadWhiteList();
-		propertiesManager = new PropertiesManager(new File("server.properties"));
+		propertiesManager = new PropertiesManager(new File(serverConnectorName + "/server.properties"));
 		
 		CommandThread cmdThread = new CommandThread(this);
 		cmdThread.setDaemon(true);
 		cmdThread.start();
-		
+
 		String wsAddr = propertiesManager.getProperty("websocket_host", "0.0.0.0:8080");
 		String mcAddr = propertiesManager.getProperty("minecraft_host", "0.0.0.0:25565");
 		int pvn = propertiesManager.getProperty("minecraft_pvn", 8);
