@@ -11,12 +11,10 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Iterator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.java_websocket.WebSocket;
 import org.java_websocket.framing.BinaryFrame;
 import org.java_websocket.framing.DataFrame;
@@ -31,171 +29,16 @@ import net.lax1dude.log4j.LogManager;
 import net.lax1dude.log4j.Logger;
 
 public class Server {
-	
-	private Logger LOGGER = LogManager.getLogger("Beta Proxy");
-	private PropertiesManager propertiesManager;
-	private final File ipBanFile = new File("banned-ips.txt");
-	private final File whiteListFile = new File("banned-ips.txt");
-	private boolean whiteListEnabled = false;
-	
-	private WebsocketServerListener wsNetManager;
-	private InetSocketAddress mcAddress;
-	
-	private Set<String> bannedIPs = new HashSet<String>();
-	private Set<String> whitelistedIPs = new HashSet<String>();
-	private Set<WebSocket> connections = new HashSet<WebSocket>();
-	
-	private int timeout = 0;
-	private boolean autoDetectPvn = false;
-	
-	public Server() {
-		startServer();
-	}
-	
-	public void startServer() {
-		System.setOut(new LoggerRedirector("STDOUT", false, System.out));
-		System.setErr(new LoggerRedirector("STDERR", true, System.err));
-		
-		LOGGER.info("Loading configurations...");
-		loadBannedList();
-		loadWhiteList();
-		propertiesManager = new PropertiesManager(new File("server.properties"));
-		
-		CommandThread cmdThread = new CommandThread(this);
-		cmdThread.setDaemon(true);
-		cmdThread.start();
-		
-		String wsAddr = propertiesManager.getProperty("websocket_host", "0.0.0.0:8080");
-		String mcAddr = propertiesManager.getProperty("minecraft_host", "0.0.0.0:25565");
-		int pvn = propertiesManager.getProperty("minecraft_pvn", 8);
-		whiteListEnabled = propertiesManager.getProperty("whitelist_enabled", false);
-		timeout = propertiesManager.getProperty("timeout", 15);
-		autoDetectPvn = propertiesManager.getProperty("experimental_auto_detect_pvn", false);
-		
-		if(timeout < 5 || timeout > 60) {
-			throw new RuntimeException("Timeout value is invalid. It must be between 5-60 seconds");
-		}
-		
-		SupportedProtocolVersionInfo.setPNVVersion(autoDetectPvn ? null : Integer.valueOf(pvn));
-		
-		InetSocketAddress inetWebsocketAddress = null;
-		if (wsAddr.length() > 0 && !wsAddr.equalsIgnoreCase("null")) {
-			String addr = wsAddr;
-			int port = 25565;
-			int cp = wsAddr.lastIndexOf(':');
-			if(cp != -1) {
-				addr = wsAddr.substring(0, cp);
-				port = Integer.parseInt(wsAddr.substring(cp + 1));
-			}
-			
-			try {
-				inetWebsocketAddress = new InetSocketAddress(InetAddress.getByName(addr), port);
-			}catch(UnknownHostException ex) {
-				throw new RuntimeException("ERROR: websocket host '" + wsAddr + "' is invalid", ex);
-			}
-		}
-		
-		InetSocketAddress inetVanillaAddress = null;
-		if (mcAddr.length() > 0 && !mcAddr.equalsIgnoreCase("null")) {
-			String addr = mcAddr;
-			int port = 25565;
-			int cp = mcAddr.lastIndexOf(':');
-			if(cp != -1) {
-				addr = mcAddr.substring(0, cp);
-				port = Integer.parseInt(mcAddr.substring(cp + 1));
-			}
-			try {
-				inetVanillaAddress = new InetSocketAddress(InetAddress.getByName(addr), port);
-			}catch(UnknownHostException ex) {
-				throw new RuntimeException("ERROR: minecraft host '" + mcAddr + "' is invalid", ex);
-			}
-		}
-		
-		LOGGER.info("Starting TCP -> WebSocket proxy for Minecraft server version(s) " + SupportedProtocolVersionInfo.getSupportedVersionNames());
-		LOGGER.info("Forwarding TCP connection tcp:/" + inetVanillaAddress.toString() + " to ws:/" + inetWebsocketAddress.toString());
-		
-		wsNetManager = new WebsocketServerListener(inetWebsocketAddress, this);
-		synchronized(wsNetManager.startupLock) {
-			try {
-				wsNetManager.startupLock.wait(5000l);
-			} catch (InterruptedException e) {
-				;
-			}
-		}
-		if(wsNetManager.startupFailed || !wsNetManager.started) {
-			throw new RuntimeException("ERROR: Could not start websocket server on " + inetWebsocketAddress.toString());
-		}
-		
-		mcAddress = inetVanillaAddress;
-	}
-	
-	public InetSocketAddress getMinecraftSocketAddress() {
-		return mcAddress;
-	}
-	
-	public Logger getLogger() {
-		return LOGGER;
-	}
-	
-	public void banIP(String ip) {
-		bannedIPs.add(ip.toLowerCase());
-		LOGGER.info("Banning IP: " + ip.toLowerCase());
-		saveBannedList();
-		
-		Iterator<WebSocket> iterator = connections.iterator();
-		while(iterator.hasNext()) {
-			WebSocket socket = iterator.next();
-			if(socket.getRemoteSocketAddress().getHostString().equals(ip.toLowerCase())) {
-				try {
-					DataFrame frame = new BinaryFrame();
-					frame.setPayload(ByteBuffer.wrap(WebsocketNetworkManager.generateDisconnectPacket("You were banned")));
-					frame.setFin(true);
-					socket.sendFrame(frame);
-				} catch(Exception e) {
-				}
-			}
-		}
-	}
-	
-	public void pardonIP(String ip) {
-		if(bannedIPs.contains(ip.toLowerCase())) {
-			bannedIPs.remove(ip.toLowerCase());
-		}
-		saveBannedList();
-		LOGGER.info("Pardoned IP: " + ip.toLowerCase());
-	}
-	
-	public void whitelistIP(String ip) {
-		LOGGER.info("Adding ip '" + ip + "' to the whitelist");
-		whitelistedIPs.add(ip.toLowerCase());
-		saveWhiteList();
-	}
-	
-	public void removeIPFromWhitelist(String ip) {
-		LOGGER.info("Removing ip '" + ip + "' from whitelist");
-		if(whitelistedIPs.contains(ip.toLowerCase())) {
-			whitelistedIPs.remove(ip.toLowerCase());
-		}
-		saveWhiteList();
-	}
-	
-	private void loadBannedList() {
-		try {
-			if(!ipBanFile.exists()) {
-				ipBanFile.createNewFile();
-			}
-			
-			bannedIPs.clear();
-			BufferedReader var1 = new BufferedReader(new FileReader(ipBanFile));
-			String var2 = "";
+
+    private final File ipBanFile = new File("banned-ips.txt");
+    private final File whiteListFile = new File("banned-ips.txt");
+    private boolean whiteListEnabled = false;
 
     private WebsocketServerListener wsNetManager;
     private InetSocketAddress mcAddress;
-    private String name = "";
     private Set<String> bannedIPs = new HashSet<String>();
     private Set<String> whitelistedIPs = new HashSet<String>();
     private Set<WebSocket> connections = new HashSet<WebSocket>();
-
     private int timeout = 0;
     private final String defaultPortTCP1;
     private final String defaultPortWSS1;
@@ -205,7 +48,8 @@ public class Server {
     private Logger LOGGER;
     File configFile = new File("servers.yml");
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-
+    private boolean autoDetectPvn = false;
+    public String name;
     public Server(String namer, String defaultPortTCP, String defaultPortWSS, String defaultIP, int pvn, int timeout, boolean whitelist) {
         name = namer;
         defaultPortTCP1 = defaultPortTCP;
@@ -222,43 +66,46 @@ public class Server {
         this(namer, defaultPortTCP, defaultPortWSS, "0.0.0.0", pvn, timeout, whitelist);
     }
 
+
     public void startServer() {
         System.setOut(new LoggerRedirector("STDOUT", false, System.out));
         System.setErr(new LoggerRedirector("STDERR", true, System.err));
 
         LOGGER.info("Loading configurations...");
-
         loadBannedList();
         loadWhiteList();
+        propertiesManager = new PropertiesManager(new File("server.properties"));
 
         CommandThread cmdThread = new CommandThread(this);
         cmdThread.setDaemon(true);
         cmdThread.start();
 
-        String wsAddr =  defaultIP1+ ":" + defaultPortWSS1;
-        String mcAddr =  defaultIP1+ ":" + defaultPortTCP1;
-        int pvn = pvn1;
-        timeout = timeout1;
+        String wsAddr = propertiesManager.getProperty("websocket_host", "0.0.0.0:8080");
+        String mcAddr = propertiesManager.getProperty("minecraft_host", "0.0.0.0:25565");
+        int pvn = propertiesManager.getProperty("minecraft_pvn", 8);
+        whiteListEnabled = propertiesManager.getProperty("whitelist_enabled", false);
+        timeout = propertiesManager.getProperty("timeout", 15);
+        autoDetectPvn = propertiesManager.getProperty("experimental_auto_detect_pvn", false);
 
-        if (timeout < 5 || timeout > 60) {
+        if(timeout < 5 || timeout > 60) {
             throw new RuntimeException("Timeout value is invalid. It must be between 5-60 seconds");
         }
 
-        SupportedProtocolVersionInfo.setPNVVersion(pvn);
+        SupportedProtocolVersionInfo.setPNVVersion(autoDetectPvn ? null : Integer.valueOf(pvn));
 
         InetSocketAddress inetWebsocketAddress = null;
         if (wsAddr.length() > 0 && !wsAddr.equalsIgnoreCase("null")) {
             String addr = wsAddr;
             int port = 25565;
             int cp = wsAddr.lastIndexOf(':');
-            if (cp != -1) {
+            if(cp != -1) {
                 addr = wsAddr.substring(0, cp);
                 port = Integer.parseInt(wsAddr.substring(cp + 1));
             }
 
             try {
                 inetWebsocketAddress = new InetSocketAddress(InetAddress.getByName(addr), port);
-            } catch (UnknownHostException ex) {
+            }catch(UnknownHostException ex) {
                 throw new RuntimeException("ERROR: websocket host '" + wsAddr + "' is invalid", ex);
             }
         }
@@ -268,13 +115,13 @@ public class Server {
             String addr = mcAddr;
             int port = 25565;
             int cp = mcAddr.lastIndexOf(':');
-            if (cp != -1) {
+            if(cp != -1) {
                 addr = mcAddr.substring(0, cp);
                 port = Integer.parseInt(mcAddr.substring(cp + 1));
             }
             try {
                 inetVanillaAddress = new InetSocketAddress(InetAddress.getByName(addr), port);
-            } catch (UnknownHostException ex) {
+            }catch(UnknownHostException ex) {
                 throw new RuntimeException("ERROR: minecraft host '" + mcAddr + "' is invalid", ex);
             }
         }
@@ -283,14 +130,14 @@ public class Server {
         LOGGER.info("Forwarding TCP connection tcp:/" + inetVanillaAddress.toString() + " to ws:/" + inetWebsocketAddress.toString());
 
         wsNetManager = new WebsocketServerListener(inetWebsocketAddress, this);
-        synchronized (wsNetManager.startupLock) {
+        synchronized(wsNetManager.startupLock) {
             try {
                 wsNetManager.startupLock.wait(5000l);
             } catch (InterruptedException e) {
                 ;
             }
         }
-        if (wsNetManager.startupFailed || !wsNetManager.started) {
+        if(wsNetManager.startupFailed || !wsNetManager.started) {
             throw new RuntimeException("ERROR: Could not start websocket server on " + inetWebsocketAddress.toString());
         }
 
@@ -311,22 +158,22 @@ public class Server {
         saveBannedList();
 
         Iterator<WebSocket> iterator = connections.iterator();
-        while (iterator.hasNext()) {
+        while(iterator.hasNext()) {
             WebSocket socket = iterator.next();
-            if (socket.getRemoteSocketAddress().getHostString().equals(ip.toLowerCase())) {
+            if(socket.getRemoteSocketAddress().getHostString().equals(ip.toLowerCase())) {
                 try {
                     DataFrame frame = new BinaryFrame();
                     frame.setPayload(ByteBuffer.wrap(WebsocketNetworkManager.generateDisconnectPacket("You were banned")));
                     frame.setFin(true);
                     socket.sendFrame(frame);
-                } catch (Exception e) {
+                } catch(Exception e) {
                 }
             }
         }
     }
 
     public void pardonIP(String ip) {
-        if (bannedIPs.contains(ip.toLowerCase())) {
+        if(bannedIPs.contains(ip.toLowerCase())) {
             bannedIPs.remove(ip.toLowerCase());
         }
         saveBannedList();
@@ -341,7 +188,7 @@ public class Server {
 
     public void removeIPFromWhitelist(String ip) {
         LOGGER.info("Removing ip '" + ip + "' from whitelist");
-        if (whitelistedIPs.contains(ip.toLowerCase())) {
+        if(whitelistedIPs.contains(ip.toLowerCase())) {
             whitelistedIPs.remove(ip.toLowerCase());
         }
         saveWhiteList();
@@ -349,7 +196,7 @@ public class Server {
 
     private void loadBannedList() {
         try {
-            if (!ipBanFile.exists()) {
+            if(!ipBanFile.exists()) {
                 ipBanFile.createNewFile();
             }
 
@@ -357,9 +204,9 @@ public class Server {
             BufferedReader var1 = new BufferedReader(new FileReader(ipBanFile));
             String var2 = "";
 
-            while (true) {
+            while(true) {
                 var2 = var1.readLine();
-                if (var2 == null) {
+                if(var2 == null) {
                     var1.close();
                     break;
                 }
@@ -373,7 +220,7 @@ public class Server {
 
     private void loadWhiteList() {
         try {
-            if (!whiteListFile.exists()) {
+            if(!whiteListFile.exists()) {
                 whiteListFile.createNewFile();
             }
 
@@ -381,9 +228,9 @@ public class Server {
             BufferedReader var1 = new BufferedReader(new FileReader(whiteListFile));
             String var2 = "";
 
-            while (true) {
+            while(true) {
                 var2 = var1.readLine();
-                if (var2 == null) {
+                if(var2 == null) {
                     var1.close();
                     break;
                 }
@@ -400,7 +247,7 @@ public class Server {
             PrintWriter var1 = new PrintWriter(new FileWriter(ipBanFile, false));
             Iterator<String> var2 = bannedIPs.iterator();
 
-            while (var2.hasNext()) {
+            while(var2.hasNext()) {
                 String var3 = var2.next();
                 var1.println(var3);
             }
@@ -417,7 +264,7 @@ public class Server {
             PrintWriter var1 = new PrintWriter(new FileWriter(whiteListFile, false));
             Iterator<String> var2 = whitelistedIPs.iterator();
 
-            while (var2.hasNext()) {
+            while(var2.hasNext()) {
                 String var3 = var2.next();
                 var1.println(var3);
             }
