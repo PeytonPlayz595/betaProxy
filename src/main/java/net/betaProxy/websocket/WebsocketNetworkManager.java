@@ -13,7 +13,6 @@ import org.java_websocket.enums.ReadyState;
 import org.java_websocket.framing.BinaryFrame;
 import org.java_websocket.framing.DataFrame;
 
-import net.betaProxy.main.Main;
 import net.betaProxy.server.Server;
 import net.betaProxy.utils.ClientServerProtocolMatcher;
 import net.betaProxy.utils.ProtocolAwarePacketReader;
@@ -39,7 +38,7 @@ public class WebsocketNetworkManager {
 	private String ip;
 	
 	private ClientServerProtocolMatcher protocolMatcher;
-	private ProtocolAwarePacketReader packetReader;
+	public ProtocolAwarePacketReader packetReader;
 	private Server server;
 	
 	public WebsocketNetworkManager(WebSocket webSocket, Server server) throws IOException {
@@ -53,7 +52,7 @@ public class WebsocketNetworkManager {
 		this.running = true;
 		final String s = Thread.currentThread().getName();
 		this.ip = webSocket.getRemoteSocketAddress().getHostString();
-		this.protocolMatcher = new ClientServerProtocolMatcher();
+		this.protocolMatcher = new ClientServerProtocolMatcher(this);
 		this.packetReader = new ProtocolAwarePacketReader(server, SupportedProtocolVersionInfo.getServerPVN());
 		this.readerThread = new Thread(() -> {
 			Thread.currentThread().setName(s);

@@ -3,13 +3,25 @@ package net.betaProxy.utils;
 public class SupportedProtocolVersionInfo {
 	
 	private static int pvn;
+	private static boolean isAutoDetect = false;
 	
-	public static void setPNVVersion(int pvn) {
-		SupportedProtocolVersionInfo.pvn = pvn;
+	public static void setPNVVersion(Integer pvn) {
+		if(pvn == null) {
+			isAutoDetect = true;
+		}
+		SupportedProtocolVersionInfo.pvn = pvn.intValue();
 	}
 	
 	public static int getServerPVN() {
 		return pvn;
+	}
+	
+	public static boolean isAutoDetectPVN() {
+		return isAutoDetect;
+	}
+	
+	public static void matchedClientPVN() {
+		isAutoDetect = false;
 	}
 	
 	public static String getSupportedVersionNames() {
