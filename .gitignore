@@ -1,4 +1,4 @@
-test-server
-build
+/test-server
+/build
 /.gradle
 /.idea
