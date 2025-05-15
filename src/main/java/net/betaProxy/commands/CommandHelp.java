@@ -2,7 +2,6 @@ package net.betaProxy.commands;
 
 import java.util.List;
 
-import net.betaProxy.main.Main;
 import net.betaProxy.server.Server;
 
 public class CommandHelp extends Command {

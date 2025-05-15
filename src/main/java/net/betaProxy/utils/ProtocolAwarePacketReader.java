@@ -9,7 +9,7 @@ import net.betaProxy.server.Server;
 public class ProtocolAwarePacketReader {
 	
 	private Server server;
-	private int pvn;
+	protected int pvn;
 	
 	public ProtocolAwarePacketReader(Server server, int pvn) {
 		this.server = server;
@@ -34,6 +34,16 @@ public class ProtocolAwarePacketReader {
 	}
 	
 	private byte[] readPacket(DataInputStream is) throws IOException {
+		if(SupportedProtocolVersionInfo.isAutoDetectPVN()) {
+			/*
+			 * TODO:
+			 * Login and handshake packets should be the same for
+			 * all currently supported protocols but change in
+			 * protocol 14 so this will need to be rewritten
+			 * as support for new protocols get added.
+			 */
+			return net.minecraft.network.v8.Packet.readPacket(is);
+		}
 		switch(pvn) {
 		case 8:
 			return net.minecraft.network.v8.Packet.readPacket(is);

@@ -11,7 +11,6 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.java_websocket.WebSocket;
@@ -43,6 +42,7 @@ public class Server {
 	private Set<WebSocket> connections = new HashSet<WebSocket>();
 	
 	private int timeout = 0;
+	private boolean autoDetectPvn = false;
 	
 	public Server() {
 		startServer();
@@ -66,12 +66,13 @@ public class Server {
 		int pvn = propertiesManager.getProperty("minecraft_pvn", 8);
 		whiteListEnabled = propertiesManager.getProperty("whitelist_enabled", false);
 		timeout = propertiesManager.getProperty("timeout", 15);
+		autoDetectPvn = propertiesManager.getProperty("experimental_auto_detect_pvn", false);
 		
 		if(timeout < 5 || timeout > 60) {
 			throw new RuntimeException("Timeout value is invalid. It must be between 5-60 seconds");
 		}
 		
-		SupportedProtocolVersionInfo.setPNVVersion(pvn);
+		SupportedProtocolVersionInfo.setPNVVersion(autoDetectPvn ? null : Integer.valueOf(pvn));
 		
 		InetSocketAddress inetWebsocketAddress = null;
 		if (wsAddr.length() > 0 && !wsAddr.equalsIgnoreCase("null")) {
