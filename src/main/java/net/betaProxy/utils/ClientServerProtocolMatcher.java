@@ -2,7 +2,6 @@ package net.betaProxy.utils;
 
 import java.nio.ByteBuffer;
 
-import net.betaProxy.websocket.WebsocketNetworkManager;
 import net.minecraft.network.local.LoginPacket;
 import net.minecraft.network.local.ServerPacket;
 
@@ -15,10 +14,10 @@ public class ClientServerProtocolMatcher {
 	public boolean outdatedClient;
 	public boolean hasSent = false;
 	
-	private WebsocketNetworkManager mngr;
+	private ServerProtocolVersion spv;
 	
-	public ClientServerProtocolMatcher(WebsocketNetworkManager mngr) {
-		this.mngr = mngr;
+	public ClientServerProtocolMatcher(ServerProtocolVersion spv) {
+		this.spv = spv;
 	}
 
 	public void attemptMatch(ByteBuffer buf) {
@@ -36,15 +35,14 @@ public class ClientServerProtocolMatcher {
 		ServerPacket SPKT = ServerPacket.readPacketData(data);
 		if(SPKT != null && SPKT instanceof LoginPacket) {
 			int pvn = ((LoginPacket)SPKT).pvn;
-			if(SPKT.isDataConsistant()) {
+			spv.matchedClientPVN();
+			spv.setPNVVersion(pvn);
+			if(SPKT.isDataConsistant(spv)) {
 				hasMatched = true;
-				SupportedProtocolVersionInfo.matchedClientPVN();
-				SupportedProtocolVersionInfo.setPNVVersion(pvn);
-				this.mngr.packetReader.pvn = pvn;
 				return;
 			} else {
 				isError = true;
-				if(pvn > SupportedProtocolVersionInfo.getServerPVN()) {
+				if(pvn > spv.getServerPVN()) {
 					outdatedServer = true;
 				} else {
 					outdatedClient = true;

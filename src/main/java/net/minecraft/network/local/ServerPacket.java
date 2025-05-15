@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.betaProxy.suppliers.local.ILocalPacketSupplier;
+import net.betaProxy.utils.ServerProtocolVersion;
 
 /*
  * This is used for mapping packet data
@@ -59,7 +60,7 @@ public abstract class ServerPacket {
 	
 	public abstract ServerPacket readPacketData(DataInputStream dis) throws IOException;
 	
-	public abstract boolean isDataConsistant();
+	public abstract boolean isDataConsistant(ServerProtocolVersion spv);
 	
 	static {
 		addMapping(1, LoginPacket.class, LoginPacket::new);

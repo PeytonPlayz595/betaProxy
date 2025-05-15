@@ -3,7 +3,7 @@ package net.minecraft.network.local;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import net.betaProxy.utils.SupportedProtocolVersionInfo;
+import net.betaProxy.utils.ServerProtocolVersion;
 
 public class LoginPacket extends ServerPacket {
 	
@@ -16,8 +16,8 @@ public class LoginPacket extends ServerPacket {
 	}
 
 	@Override
-	public boolean isDataConsistant() {
-		return this.pvn == SupportedProtocolVersionInfo.getServerPVN();
+	public boolean isDataConsistant(ServerProtocolVersion spv) {
+		return this.pvn == spv.getServerPVN();
 	}
 
 }
