@@ -1,2 +1,4 @@
 test-server
 build
+.gradle
+.idea
