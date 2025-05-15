@@ -47,11 +47,9 @@ public class Server {
     private final String defaultIPWSS1;
     private int pvn = 0;
     private int timeout1 = 15;
-    private Boolean whiteList;
     private Logger LOGGER;
-    File configFile = new File("servers.yml");
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-    private String name = "";
+
+    public String name = "";
 
     public Server(String namer, String defaultIPTCP, String defaultIPWSS, int pvn, int timeout, boolean whitelist) {
         name = namer;
@@ -61,6 +59,7 @@ public class Server {
         this.pvn = pvn;
         whiteListEnabled = whitelist;
         LOGGER =  LogManager.getLogger("(SERVER: " + name+ ")" + " Beta Proxy");
+        ServerManager.serverConnected.put(name, this);
         startServer();
     }
 
@@ -282,7 +281,16 @@ public class Server {
     public int getTimeout() {
         return timeout;
     }
+    public InetSocketAddress getMcAddress(){
+        return mcAddress;
+    }
+    public WebsocketServerListener getWsNetManager(){
+        return wsNetManager;
+    }
+    public int redirectToServer(String serverName){
 
+        return 0;
+    }
     public Set<WebSocket> getConnections() {
         return this.connections;
     }

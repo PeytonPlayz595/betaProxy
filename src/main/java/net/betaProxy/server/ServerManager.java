@@ -7,10 +7,11 @@ import net.betaProxy.config.AccessibleProxyConfig;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 public class ServerManager {
-
+    public static HashMap<String, Server> serverConnected = new HashMap<>();
     public static class ServerEntry {
         public String name;
         public String minecraftIP;
