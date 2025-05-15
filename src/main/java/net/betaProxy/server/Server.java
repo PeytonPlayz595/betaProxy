@@ -11,7 +11,9 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -31,7 +33,7 @@ import net.lax1dude.log4j.Logger;
 public class Server {
 
     private final File ipBanFile = new File("banned-ips.txt");
-    private final File whiteListFile = new File("banned-ips.txt");
+    private final File whiteListFile = new File("whitelist-ips.txt");
     private boolean whiteListEnabled = false;
 
     private WebsocketServerListener wsNetManager;
@@ -287,10 +289,7 @@ public class Server {
     public WebsocketServerListener getWsNetManager(){
         return wsNetManager;
     }
-    public int redirectToServer(String serverName){
 
-        return 0;
-    }
     public Set<WebSocket> getConnections() {
         return this.connections;
     }
