@@ -6,14 +6,14 @@ public class ServerProtocolVersion {
 	private boolean isAutoDetect = false;
 	
 	public ServerProtocolVersion(Integer pvn) {
-		if(pvn == null) {
+		if(pvn == -1) {
 			isAutoDetect = true;
 		}
 		this.pvn = pvn.intValue();
 	}
 	
 	public void setPNVVersion(Integer pvn) {
-		if(pvn == null) {
+		if(pvn == -1) {
 			isAutoDetect = true;
 		}
 		this.pvn = pvn.intValue();
