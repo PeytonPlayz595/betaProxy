@@ -9,11 +9,11 @@ import net.betaProxy.server.Server;
 public class ProtocolAwarePacketReader {
 	
 	private Server server;
-	protected int pvn;
+	protected ServerProtocolVersion spv;
 	
-	public ProtocolAwarePacketReader(Server server, int pvn) {
+	public ProtocolAwarePacketReader(Server server, ServerProtocolVersion spv) {
 		this.server = server;
-		this.pvn = pvn;
+		this.spv = spv;
 	}
 	
 	public byte[] defragment(DataInputStream is) throws IOException {
@@ -34,7 +34,7 @@ public class ProtocolAwarePacketReader {
 	}
 	
 	private byte[] readPacket(DataInputStream is) throws IOException {
-		if(SupportedProtocolVersionInfo.isAutoDetectPVN()) {
+		if(spv.isAutoDetectPVN()) {
 			/*
 			 * TODO:
 			 * Login and handshake packets should be the same for
@@ -44,7 +44,7 @@ public class ProtocolAwarePacketReader {
 			 */
 			return net.minecraft.network.v8.Packet.readPacket(is);
 		}
-		switch(pvn) {
+		switch(spv.getServerPVN()) {
 		case 8:
 			return net.minecraft.network.v8.Packet.readPacket(is);
 		case 7:

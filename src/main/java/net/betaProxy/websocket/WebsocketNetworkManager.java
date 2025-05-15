@@ -16,7 +16,7 @@ import org.java_websocket.framing.DataFrame;
 import net.betaProxy.server.Server;
 import net.betaProxy.utils.ClientServerProtocolMatcher;
 import net.betaProxy.utils.ProtocolAwarePacketReader;
-import net.betaProxy.utils.SupportedProtocolVersionInfo;
+import net.betaProxy.utils.ServerProtocolVersion;
 import net.lax1dude.log4j.LogManager;
 import net.lax1dude.log4j.Logger;
 
@@ -39,9 +39,10 @@ public class WebsocketNetworkManager {
 	
 	private ClientServerProtocolMatcher protocolMatcher;
 	public ProtocolAwarePacketReader packetReader;
+	private ServerProtocolVersion spv;
 	private Server server;
 	
-	public WebsocketNetworkManager(WebSocket webSocket, Server server) throws IOException {
+	public WebsocketNetworkManager(WebSocket webSocket, Server server, ServerProtocolVersion spv) throws IOException {
 		this.webSocket = webSocket;
 		this.server = server;
 		InetSocketAddress addr = server.getMinecraftSocketAddress();
@@ -52,8 +53,9 @@ public class WebsocketNetworkManager {
 		this.running = true;
 		final String s = Thread.currentThread().getName();
 		this.ip = webSocket.getRemoteSocketAddress().getHostString();
-		this.protocolMatcher = new ClientServerProtocolMatcher(this);
-		this.packetReader = new ProtocolAwarePacketReader(server, SupportedProtocolVersionInfo.getServerPVN());
+		this.spv = spv;
+		this.protocolMatcher = new ClientServerProtocolMatcher(this.spv);
+		this.packetReader = new ProtocolAwarePacketReader(server, this.spv);
 		this.readerThread = new Thread(() -> {
 			Thread.currentThread().setName(s);
 		    while(running) {

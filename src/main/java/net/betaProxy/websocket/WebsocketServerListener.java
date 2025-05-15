@@ -11,6 +11,7 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import net.betaProxy.server.Server;
+import net.betaProxy.utils.ServerProtocolVersion;
 
 public class WebsocketServerListener extends WebSocketServer {
 
@@ -19,10 +20,12 @@ public class WebsocketServerListener extends WebSocketServer {
 	public volatile boolean started;
 	
 	private Server server;
+	private ServerProtocolVersion spv;
 	
-	public WebsocketServerListener(InetSocketAddress addr, Server server) {
+	public WebsocketServerListener(InetSocketAddress addr, Server server, ServerProtocolVersion spv) {
 		super(addr);
 		this.server = server;
+		this.spv = spv;
 		this.startupFailed = false;
 		this.started = false;
 		this.setConnectionLostTimeout(15);
@@ -85,7 +88,7 @@ public class WebsocketServerListener extends WebSocketServer {
 			return;
 		}
 		try {
-			WebsocketNetworkManager mngr = new WebsocketNetworkManager(arg0, server);
+			WebsocketNetworkManager mngr = new WebsocketNetworkManager(arg0, server, spv);
 			arg0.setAttachment(mngr);
 			server.getConnections().add(arg0);
 		} catch (IOException e) {

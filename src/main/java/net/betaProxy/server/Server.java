@@ -20,7 +20,7 @@ import org.java_websocket.framing.DataFrame;
 import net.betaProxy.commands.CommandThread;
 import net.betaProxy.utils.LoggerRedirector;
 import net.betaProxy.utils.PropertiesManager;
-import net.betaProxy.utils.SupportedProtocolVersionInfo;
+import net.betaProxy.utils.ServerProtocolVersion;
 import net.betaProxy.websocket.WebsocketNetworkManager;
 import net.betaProxy.websocket.WebsocketServerListener;
 import net.lax1dude.log4j.LogManager;
@@ -72,7 +72,7 @@ public class Server {
 			throw new RuntimeException("Timeout value is invalid. It must be between 5-60 seconds");
 		}
 		
-		SupportedProtocolVersionInfo.setPNVVersion(autoDetectPvn ? null : Integer.valueOf(pvn));
+		ServerProtocolVersion protocolVersion = new ServerProtocolVersion(autoDetectPvn ? null : Integer.valueOf(pvn));
 		
 		InetSocketAddress inetWebsocketAddress = null;
 		if (wsAddr.length() > 0 && !wsAddr.equalsIgnoreCase("null")) {
@@ -107,10 +107,14 @@ public class Server {
 			}
 		}
 		
-		LOGGER.info("Starting TCP -> WebSocket proxy for Minecraft server version(s) " + SupportedProtocolVersionInfo.getSupportedVersionNames());
+		if(!protocolVersion.isAutoDetectPVN()) {
+			LOGGER.info("Starting TCP -> WebSocket proxy for Minecraft server version(s) " + protocolVersion.getSupportedVersionNames());
+		} else {
+			LOGGER.info("Starting TCP -> WebSocket proxy (client pvn set to autodect)");
+		}
 		LOGGER.info("Forwarding TCP connection tcp:/" + inetVanillaAddress.toString() + " to ws:/" + inetWebsocketAddress.toString());
 		
-		wsNetManager = new WebsocketServerListener(inetWebsocketAddress, this);
+		wsNetManager = new WebsocketServerListener(inetWebsocketAddress, this, protocolVersion);
 		synchronized(wsNetManager.startupLock) {
 			try {
 				wsNetManager.startupLock.wait(5000l);

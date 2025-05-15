@@ -1,30 +1,37 @@
 package net.betaProxy.utils;
 
-public class SupportedProtocolVersionInfo {
+public class ServerProtocolVersion {
 	
-	private static int pvn;
-	private static boolean isAutoDetect = false;
+	private int pvn;
+	private boolean isAutoDetect = false;
 	
-	public static void setPNVVersion(Integer pvn) {
+	public ServerProtocolVersion(Integer pvn) {
 		if(pvn == null) {
 			isAutoDetect = true;
 		}
-		SupportedProtocolVersionInfo.pvn = pvn.intValue();
+		this.pvn = pvn.intValue();
 	}
 	
-	public static int getServerPVN() {
+	public void setPNVVersion(Integer pvn) {
+		if(pvn == null) {
+			isAutoDetect = true;
+		}
+		this.pvn = pvn.intValue();
+	}
+	
+	public int getServerPVN() {
 		return pvn;
 	}
 	
-	public static boolean isAutoDetectPVN() {
+	public boolean isAutoDetectPVN() {
 		return isAutoDetect;
 	}
 	
-	public static void matchedClientPVN() {
+	public void matchedClientPVN() {
 		isAutoDetect = false;
 	}
 	
-	public static String getSupportedVersionNames() {
+	public String getSupportedVersionNames() {
 		switch(pvn) {
 		case 8:
 			return "Beta 1.1_02 -> Beta 1.2_02";
