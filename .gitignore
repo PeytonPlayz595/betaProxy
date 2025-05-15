@@ -1,5 +1,4 @@
 test-server
 build
-.gradle
-.idea
- 
+/.gradle
+/.idea
