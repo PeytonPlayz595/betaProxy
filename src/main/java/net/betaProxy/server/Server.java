@@ -87,7 +87,7 @@ public class Server {
             throw new RuntimeException("Timeout value is invalid. It must be between 5-60 seconds");
         }
 
-            ServerProtocolVersion protocolVersion = new ServerProtocolVersion(autoDetectPvn ? -1 : Integer.valueOf(pvn));
+            ServerProtocolVersion protocolVersion = new ServerProtocolVersion(autoDetectPvn ? null : Integer.valueOf(pvn));
 
         InetSocketAddress inetWebsocketAddress = null;
         if (wsAddr.length() > 0 && !wsAddr.equalsIgnoreCase("null")) {
