@@ -6,7 +6,7 @@ public class ServerProtocolVersion {
 	private boolean isAutoDetect = false;
 	
 	public ServerProtocolVersion(Integer pvn) {
-		if(pvn == -1) {
+		if(pvn == Integer.valueOf(-1)) {
 			isAutoDetect = true;
 			this.pvn = -1;
 		} else {
