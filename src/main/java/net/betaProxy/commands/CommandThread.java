@@ -16,6 +16,7 @@ public class CommandThread extends Thread {
 	
 	@Override
 	public void run() {
+		server.getLogger().info("Do switch-server <server> to switch to a different websocket server in the proxy");
 		try(BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
 			String s = null;
 			
@@ -40,5 +41,7 @@ public class CommandThread extends Thread {
 			
 		}
 	}
-
+	public void switchServer(Server server){
+		this.server = server;
+	}
 }
