@@ -8,7 +8,7 @@ public class ServerProtocolVersion {
 	public ServerProtocolVersion(Integer pvn) {
 		if(pvn == Integer.valueOf(-1)) {
 			isAutoDetect = true;
-			this.pvn = -1;
+			this.pvn = Integer.valueOf(-1);
 		} else {
 			this.pvn = pvn.intValue();
 		}
