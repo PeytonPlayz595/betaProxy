@@ -3,15 +3,21 @@ package net.betaProxy.server;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import net.betaProxy.commands.CommandThread;
 import net.betaProxy.config.AccessibleProxyConfig;
+import net.betaProxy.utils.LoggerRedirector;
+import net.lax1dude.log4j.LogManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class ServerManager {
     public static HashMap<String, Server> serverConnected = new HashMap<>();
+    private static CommandThread currentThread;
+    public static ArrayList<String> registeredServer = new ArrayList<>();
     public static class ServerEntry {
         public String name;
         public String minecraftIP;
@@ -59,6 +65,11 @@ public class ServerManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        currentThread = new CommandThread(serverConnected.get(registeredServer.get(0)));
+        currentThread.setDaemon(true);
+        currentThread.start();
+        switchCommandThread(serverConnected.get(registeredServer.get(0)));
+
 
     }
 
@@ -94,5 +105,12 @@ public class ServerManager {
         entry.timeout = timeout;
         entry.whitelistEnabled = whitelistEnabled;
         return entry;
+    }
+    public static void switchCommandThread(Server server){
+        if (currentThread != null) {
+            currentThread.switchServer(server);
+            currentThread = null;
+        }
+
     }
 }

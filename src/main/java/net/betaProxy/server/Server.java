@@ -60,8 +60,9 @@ public class Server {
         timeout1 = timeout;
         this.pvn = pvn;
         whiteListEnabled = whitelist;
-        LOGGER =  LogManager.getLogger("(SERVER: " + name+ ")" + " Beta Proxy");
+        LOGGER = LogManager.getLogger("(SERVER: " + name + ")" + " Beta Proxy");
         ServerManager.serverConnected.put(name, this);
+        ServerManager.registeredServer.add(this.name);
         startServer();
     }
 
@@ -74,34 +75,31 @@ public class Server {
         loadBannedList();
         loadWhiteList();
 
-        CommandThread cmdThread = new CommandThread(this);
-        cmdThread.setDaemon(true);
-        cmdThread.start();
 
-        String wsAddr =  defaultIPWSS1;
-        String mcAddr =  defaultIPTCP1;
+        String wsAddr = defaultIPWSS1;
+        String mcAddr = defaultIPTCP1;
         timeout = timeout1;
         autoDetectPvn = AccessibleProxyConfig.exp_pvnAutoDetect;
 
-        if(timeout < 5 || timeout > 60) {
+        if (timeout < 5 || timeout > 60) {
             throw new RuntimeException("Timeout value is invalid. It must be between 5-60 seconds");
         }
 
-            ServerProtocolVersion protocolVersion = new ServerProtocolVersion(autoDetectPvn ? -1 : Integer.valueOf(pvn));
+        ServerProtocolVersion protocolVersion = new ServerProtocolVersion(autoDetectPvn ? -1 : Integer.valueOf(pvn));
 
         InetSocketAddress inetWebsocketAddress = null;
         if (wsAddr.length() > 0 && !wsAddr.equalsIgnoreCase("null")) {
             String addr = wsAddr;
             int port = 25565;
             int cp = wsAddr.lastIndexOf(':');
-            if(cp != -1) {
+            if (cp != -1) {
                 addr = wsAddr.substring(0, cp);
                 port = Integer.parseInt(wsAddr.substring(cp + 1));
             }
 
             try {
                 inetWebsocketAddress = new InetSocketAddress(InetAddress.getByName(addr), port);
-            }catch(UnknownHostException ex) {
+            } catch (UnknownHostException ex) {
                 throw new RuntimeException("ERROR: websocket host '" + wsAddr + "' is invalid", ex);
             }
         }
@@ -111,18 +109,18 @@ public class Server {
             String addr = mcAddr;
             int port = 25565;
             int cp = mcAddr.lastIndexOf(':');
-            if(cp != -1) {
+            if (cp != -1) {
                 addr = mcAddr.substring(0, cp);
                 port = Integer.parseInt(mcAddr.substring(cp + 1));
             }
             try {
                 inetVanillaAddress = new InetSocketAddress(InetAddress.getByName(addr), port);
-            }catch(UnknownHostException ex) {
+            } catch (UnknownHostException ex) {
                 throw new RuntimeException("ERROR: minecraft host '" + mcAddr + "' is invalid", ex);
             }
         }
 
-        if(!protocolVersion.isAutoDetectPVN()) {
+        if (!protocolVersion.isAutoDetectPVN()) {
             LOGGER.info("Starting TCP -> WebSocket proxy for Minecraft server version(s) " + protocolVersion.getSupportedVersionNames());
         } else {
             LOGGER.info("Starting TCP -> WebSocket proxy (client pvn set to autodect)");
@@ -130,14 +128,14 @@ public class Server {
         LOGGER.info("Forwarding TCP connection tcp:/" + inetVanillaAddress.toString() + " to ws:/" + inetWebsocketAddress.toString());
 
         wsNetManager = new WebsocketServerListener(inetWebsocketAddress, this, protocolVersion);
-        synchronized(wsNetManager.startupLock) {
+        synchronized (wsNetManager.startupLock) {
             try {
                 wsNetManager.startupLock.wait(5000l);
             } catch (InterruptedException e) {
                 ;
             }
         }
-        if(wsNetManager.startupFailed || !wsNetManager.started) {
+        if (wsNetManager.startupFailed || !wsNetManager.started) {
             throw new RuntimeException("ERROR: Could not start websocket server on " + inetWebsocketAddress.toString());
         }
 
@@ -158,22 +156,22 @@ public class Server {
         saveBannedList();
 
         Iterator<WebSocket> iterator = connections.iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             WebSocket socket = iterator.next();
-            if(socket.getRemoteSocketAddress().getHostString().equals(ip.toLowerCase())) {
+            if (socket.getRemoteSocketAddress().getHostString().equals(ip.toLowerCase())) {
                 try {
                     DataFrame frame = new BinaryFrame();
                     frame.setPayload(ByteBuffer.wrap(WebsocketNetworkManager.generateDisconnectPacket("You were banned")));
                     frame.setFin(true);
                     socket.sendFrame(frame);
-                } catch(Exception e) {
+                } catch (Exception e) {
                 }
             }
         }
     }
 
     public void pardonIP(String ip) {
-        if(bannedIPs.contains(ip.toLowerCase())) {
+        if (bannedIPs.contains(ip.toLowerCase())) {
             bannedIPs.remove(ip.toLowerCase());
         }
         saveBannedList();
@@ -188,7 +186,7 @@ public class Server {
 
     public void removeIPFromWhitelist(String ip) {
         LOGGER.info("Removing ip '" + ip + "' from whitelist");
-        if(whitelistedIPs.contains(ip.toLowerCase())) {
+        if (whitelistedIPs.contains(ip.toLowerCase())) {
             whitelistedIPs.remove(ip.toLowerCase());
         }
         saveWhiteList();
@@ -196,7 +194,7 @@ public class Server {
 
     private void loadBannedList() {
         try {
-            if(!ipBanFile.exists()) {
+            if (!ipBanFile.exists()) {
                 ipBanFile.createNewFile();
             }
 
@@ -204,9 +202,9 @@ public class Server {
             BufferedReader var1 = new BufferedReader(new FileReader(ipBanFile));
             String var2 = "";
 
-            while(true) {
+            while (true) {
                 var2 = var1.readLine();
-                if(var2 == null) {
+                if (var2 == null) {
                     var1.close();
                     break;
                 }
@@ -220,7 +218,7 @@ public class Server {
 
     private void loadWhiteList() {
         try {
-            if(!whiteListFile.exists()) {
+            if (!whiteListFile.exists()) {
                 whiteListFile.createNewFile();
             }
 
@@ -228,9 +226,9 @@ public class Server {
             BufferedReader var1 = new BufferedReader(new FileReader(whiteListFile));
             String var2 = "";
 
-            while(true) {
+            while (true) {
                 var2 = var1.readLine();
-                if(var2 == null) {
+                if (var2 == null) {
                     var1.close();
                     break;
                 }
@@ -247,7 +245,7 @@ public class Server {
             PrintWriter var1 = new PrintWriter(new FileWriter(ipBanFile, false));
             Iterator<String> var2 = bannedIPs.iterator();
 
-            while(var2.hasNext()) {
+            while (var2.hasNext()) {
                 String var3 = var2.next();
                 var1.println(var3);
             }
@@ -264,7 +262,7 @@ public class Server {
             PrintWriter var1 = new PrintWriter(new FileWriter(whiteListFile, false));
             Iterator<String> var2 = whitelistedIPs.iterator();
 
-            while(var2.hasNext()) {
+            while (var2.hasNext()) {
                 String var3 = var2.next();
                 var1.println(var3);
             }
@@ -283,10 +281,12 @@ public class Server {
     public int getTimeout() {
         return timeout;
     }
-    public InetSocketAddress getMcAddress(){
+
+    public InetSocketAddress getMcAddress() {
         return mcAddress;
     }
-    public WebsocketServerListener getWsNetManager(){
+
+    public WebsocketServerListener getWsNetManager() {
         return wsNetManager;
     }
 
@@ -302,4 +302,24 @@ public class Server {
         return this.whitelistedIPs;
     }
 
+    public void listOtherServers() {
+        LOGGER.info("Servers:");
+        for (String serverKey : ServerManager.serverConnected.keySet()) {
+            LOGGER.info(serverKey);
+        }
+    }
+    public void switchServerCommand(String arg){
+        if (arg == null || arg.isEmpty()) {
+            LOGGER.error("Args empty");
+            return;
+        }
+        String[] words = arg.split("\\s+", 2);
+        if(ServerManager.serverConnected.get(words[0]) == null){
+            LOGGER.error("Server doesn't exist. Do list-server to see connected servers");
+            return;
+        }
+        LOGGER.info("Switching");
+        LOGGER = LogManager.getLogger("(SERVER: " + words[0] + ")" + " Beta Proxy");
+        ServerManager.switchCommandThread(ServerManager.serverConnected.get(words[0]));
+    }
 }
