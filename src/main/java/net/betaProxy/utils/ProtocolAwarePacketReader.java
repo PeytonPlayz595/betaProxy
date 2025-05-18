@@ -17,7 +17,7 @@ public class ProtocolAwarePacketReader {
 	}
 	
 	public byte[] defragment(DataInputStream is) throws IOException {
-		is.mark(4096);
+		is.mark(16384); //16384 is what v9 uses
 		
 		byte[] data = null;
 		try {
@@ -35,16 +35,21 @@ public class ProtocolAwarePacketReader {
 	
 	private byte[] readPacket(DataInputStream is) throws IOException {
 		if(spv.isAutoDetectPVN()) {
-			/*
-			 * TODO:
-			 * Login and handshake packets should be the same for
-			 * all currently supported protocols but change in
-			 * protocol 14 so this will need to be rewritten
-			 * as support for new protocols get added.
-			 */
-			return net.minecraft.network.v8.Packet.readPacket(is);
+			try {
+				//Tries to read packets received before the PVN is detected
+				//as a v9 packet but catches EOFExceptions and uses v8 as a
+				//fallback since the reason for the exception is most likely
+				//due to the client using a pvn lower than 9
+				return net.minecraft.network.v9.Packet.readPacket(is);
+			}catch(EOFException e) {
+				is.reset();
+				is.mark(16384); //16384 is what v9 uses
+				return net.minecraft.network.v8.Packet.readPacket(is);
+			}
 		}
 		switch(spv.getServerPVN()) {
+		case 9:
+			return net.minecraft.network.v9.Packet.readPacket(is);
 		case 8:
 			return net.minecraft.network.v8.Packet.readPacket(is);
 		case 7:
