@@ -35,6 +35,10 @@ public class ServerProtocolVersion {
 	
 	public String getSupportedVersionNames() {
 		switch(pvn) {
+		case 10:
+			return "Beta 1.4 -> Beta 1.4_01";
+		case 9:
+			return "Beta 1.3 -> Beta 1.3_01";
 		case 8:
 			return "Beta 1.1_02 -> Beta 1.2_02";
 		case 7:
@@ -42,7 +46,7 @@ public class ServerProtocolVersion {
 		case 6:
 			return "Alpha v1.2.3_05 -> Alpha v1.2.6";
 		case 2:
-			return "Aplha v1.1.0 -> Alpha v1.1.2_01";
+			return "Alpha v1.1.0 -> Alpha v1.1.2_01";
 		default:
 			throw new RuntimeException("Unsupported server protocol version: '" + pvn + "'");
 		}
