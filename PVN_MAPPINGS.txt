@@ -1,4 +1,10 @@
 Supported server versions:
+    Beta 1.4_01: PVN 10
+    Beta 1.4: PVN 10
+
+    Beta 1.3_01: PVN 9
+    Beta 1.3: PVN 9
+
     Beta 1.2_02: PVN 8
     Beta 1.2_01: PVN 8
     Beta 1.2: PVN 8
