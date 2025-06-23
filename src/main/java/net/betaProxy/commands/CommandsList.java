@@ -10,7 +10,10 @@ public class CommandsList {
 			new CommandPardon("pardon-ip "),
 			new CommandAddWhitelist("whitelist-add "),
 			new CommandRemoveWhitelist("whitelist-remove "),
+			new CommandSwitchServerLogger("switch-server "),
+			new CommandListServer("list-server"),
 			new CommandHelp("help")
+
 	};
 	
 	public static Command getCommand(String cmd) {
