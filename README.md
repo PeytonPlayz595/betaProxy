@@ -2,6 +2,10 @@
 
 Beta Proxy is a custom TCP to WebSocket proxy I built specifically for all of my Golden Age Minecraft web ports.
 
+This project does not contain any of Minecraft's intellectual property, the only code used in this project from Eaglercraft is lax's LOG4J port because I already had that downloaded and I was too lazy to add the actual log4j dependency to the repo even tho it would have literally taken like less than 30 seconds to do. However, this project does use Minecraft's networking protocol (which is publicly documented btw) for a bunch of old alpha/beta versions. 
+
+**This proxy does not manipulate the contents of packets in any way, it only peices together packet fragments from the server to be sent over WebSockets!**
+
 # Why is this a thing?
 
 For all of my old ports, people were stuck using a raw TCP to WebSocket proxy. TCP has no concept of frames, so packets would be sent to the client in fragments and they would have to be pieced together client-side. This was horrible for performance and would sometimes break. Beta Proxy pieces together the packet fragments before they are sent to the client to ensure a full packet is sent for every frame. This eliminates the need for clients to have to peice them together which will greatly improve client-side performance and reduces the chances of an error.
