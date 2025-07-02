@@ -10,7 +10,6 @@ Code used within Beta Proxy:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Project Name: EaglercraftX
 Project Authors: lax1dude and ayunami2000
-Project URL: https://github.com/Eaglercraft-Archive
 
 Used For: Logging (LOG4J TeaVM port)
 
