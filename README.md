@@ -4,7 +4,7 @@ Beta Proxy is a custom TCP to WebSocket proxy I built specifically for all of my
 
 This project does not contain any of Minecraft's intellectual property, the only code used in this project from Eaglercraft is lax's LOG4J port because I already had that downloaded and I was too lazy to add the actual log4j dependency to the repo even tho it would have literally taken like less than 30 seconds to do. However, this project does use Minecraft's networking protocol (which is publicly documented btw) for a bunch of old alpha/beta versions. 
 
-**This proxy does not manipulate the contents of any packets, it only reads packet data and pieces together packet fragments from the server to be sent over WebSockets. This proxy does not perform any malicious acts was not made with the intent of performing any malicious acts, this proxy does not purposely allow someone to do such.**
+**This proxy does not manipulate the contents of any packets, it only reads packet data and pieces together packet fragments from the server to be sent over WebSockets. This proxy does not perform any malicious acts and was not made with the intent of performing any malicious acts, this proxy does not purposely allow someone to do such.**
 
 # Why is this a thing?
 
