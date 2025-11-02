@@ -41,7 +41,7 @@ public class WebsocketServerListener extends WebSocketServer {
 	public void onClose(WebSocket arg0, int arg1, String arg2, boolean arg3) {
 		WebsocketNetworkManager mgr = arg0.getAttachment();
 		mgr.checkDisconnected();
-		server.getConnections().remove(arg0);
+		this.server.getConnections().remove(arg0);
 	}
 
 	@Override

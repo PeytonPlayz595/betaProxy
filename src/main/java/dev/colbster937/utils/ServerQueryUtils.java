@@ -92,9 +92,15 @@ public class ServerQueryUtils {
     mngr.setQuerySocket();
     String acc = message.toLowerCase();
     if (acc.startsWith("accept:")) {
+      server.getConnections().remove(webSocket);
       acc = acc.substring(7).trim();
-      if ("motd".equals(acc) && isMOTDSupported()) {
-        webSocket.send(buildEaglerInfo(cachedMOTD, cachedOnlinePlayers, cachedMaxPlayers));
+      if ("motd".equals(acc)) {
+        if (isMOTDSupported()) {
+          webSocket.send(buildEaglerInfo(cachedMOTD, cachedOnlinePlayers, cachedMaxPlayers));
+        } else {
+          int players = server.getConnections().size() - 1;
+          webSocket.send(buildEaglerInfo("A " + ServerVersion.NAME + " Server", players, players + 1));
+        }
         webSocket.close();
         queryThread.send();
         return true;
