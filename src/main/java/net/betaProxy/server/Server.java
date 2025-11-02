@@ -26,6 +26,8 @@ import net.betaProxy.websocket.WebsocketServerListener;
 import net.lax1dude.log4j.LogManager;
 import net.lax1dude.log4j.Logger;
 
+import dev.colbster937.utils.ServerQueryUtils;
+
 public class Server {
 	
 	private Logger LOGGER = LogManager.getLogger("Beta Proxy");
@@ -33,6 +35,7 @@ public class Server {
 	private final File ipBanFile = new File("banned-ips.txt");
 	private final File whiteListFile = new File("banned-ips.txt");
 	private boolean whiteListEnabled = false;
+	private boolean ipForwarding = false;
 	
 	private WebsocketServerListener wsNetManager;
 	private InetSocketAddress mcAddress;
@@ -65,6 +68,7 @@ public class Server {
 		String mcAddr = propertiesManager.getProperty("minecraft_host", "0.0.0.0:25565");
 		int pvn = propertiesManager.getProperty("minecraft_pvn", 8);
 		whiteListEnabled = propertiesManager.getProperty("whitelist_enabled", false);
+		ipForwarding = propertiesManager.getProperty("experimental_ip_forwarding", false);
 		timeout = propertiesManager.getProperty("timeout", 15);
 		autoDetectPvn = propertiesManager.getProperty("experimental_auto_detect_pvn", false);
 		
@@ -127,6 +131,7 @@ public class Server {
 		}
 		
 		mcAddress = inetVanillaAddress;
+		ServerQueryUtils.initData(this, protocolVersion);
 	}
 	
 	public InetSocketAddress getMinecraftSocketAddress() {
@@ -264,7 +269,11 @@ public class Server {
 	public boolean isWhitelistEnabled() {
 		return whiteListEnabled;
 	}
-	
+
+	public boolean isIPForwardingEnabled() {
+		return ipForwarding;
+	}
+
 	public int getTimeout() {
 		return timeout;
 	}

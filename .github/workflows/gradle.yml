@@ -1,0 +1,73 @@
+name: Build Proxy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      - name: Create Gradle wrapper
+        run: gradle wrapper
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build Proxy
+        run: ./gradlew shadowJar
+
+      - name: Get short commit hash
+        id: vars
+        run: echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Move Artifact
+        run: |
+          mkdir -p dist
+          cp build/libs/betaProxy-all.jar dist/betaProxy.jar
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: betaProxy_${{ steps.vars.outputs.hash }}
+          path: dist/betaProxy.jar
+
+      - name: Create Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.hash }}
+          name: Release ${{ steps.vars.outputs.hash }}
+          files: dist/*
+          prerelease: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

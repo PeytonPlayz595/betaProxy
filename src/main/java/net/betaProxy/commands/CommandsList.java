@@ -10,6 +10,7 @@ public class CommandsList {
 			new CommandPardon("pardon-ip "),
 			new CommandAddWhitelist("whitelist-add "),
 			new CommandRemoveWhitelist("whitelist-remove "),
+			new CommandConfirmCode("confirm-code "),
 			new CommandHelp("help")
 	};
 	

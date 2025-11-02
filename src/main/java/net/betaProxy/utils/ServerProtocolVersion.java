@@ -35,6 +35,8 @@ public class ServerProtocolVersion {
 	
 	public String getSupportedVersionNames() {
 		switch(pvn) {
+		case 17:
+			return "Beta 1.8 -> Beta 1.8.1";
 		case 10:
 			return "Beta 1.4 -> Beta 1.4_01";
 		case 9:

@@ -48,6 +48,8 @@ public class ProtocolAwarePacketReader {
 			}
 		}
 		switch(spv.getServerPVN()) {
+		case 17:
+			return net.minecraft.network.v17.Packet.readPacket(is);
 		case 10:
 			return net.minecraft.network.v10.Packet.readPacket(is);
 		case 9:
